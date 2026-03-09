@@ -40,12 +40,14 @@ struct LoginView: View {
                 .navigationBarTitleDisplayMode(.large)
             #endif
             .disabled(viewModel.isLoading)
-            .alert("Error", isPresented: $viewModel.showError) {
+            .errorAlert()  // Use centralized error handling
+            .connectionStatus()  // Show connection status banner
+            .alert("Success", isPresented: $viewModel.showSuccess) {
                 Button("OK") {
-                    viewModel.dismissError()
+                    viewModel.dismissSuccess()
                 }
             } message: {
-                Text(viewModel.errorMessage ?? "An error occurred")
+                Text(viewModel.successMessage ?? "Success")
             }
         }
     }
@@ -133,6 +135,7 @@ struct LoginView: View {
         VStack(spacing: 16) {
             // Sign in button
             Button {
+                HapticManager.shared.medium()
                 Task {
                     await viewModel.signIn()
                 }

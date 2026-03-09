@@ -4,8 +4,10 @@ import SwiftUI
 struct ProfileView: View {
 
     @StateObject private var viewModel = ProfileViewModel()
+    @StateObject private var onboardingManager = OnboardingManager.shared
     @State private var showPairingSheet = false
     @State private var showEditNameSheet = false
+    @State private var showTooltip = false
 
     // Platform-specific background color
     private var backgroundColor: Color {
@@ -39,25 +41,25 @@ struct ProfileView: View {
             .navigationTitle("Profile")
             .toolbar {
                 #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        Task {
-                            await viewModel.loadProfile()
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            Task {
+                                await viewModel.loadProfile()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
                         }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
                     }
-                }
                 #else
-                ToolbarItem(placement: .automatic) {
-                    Button {
-                        Task {
-                            await viewModel.loadProfile()
+                    ToolbarItem(placement: .automatic) {
+                        Button {
+                            Task {
+                                await viewModel.loadProfile()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.clockwise")
                         }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
                     }
-                }
                 #endif
             }
             .task {
@@ -89,6 +91,23 @@ struct ProfileView: View {
             }
             .sheet(isPresented: $showEditNameSheet) {
                 EditNameView(viewModel: viewModel)
+            }
+            .tooltip(
+                message: "Pair with your partner to share quests, rewards, and celebrate together!",
+                isShowing: $showTooltip,
+                onDismiss: {
+                    onboardingManager.hasSeenPairingTooltip = true
+                }
+            )
+            .task {
+                // Show tooltip for first-time users without partner
+                if !onboardingManager.hasSeenPairingTooltip && viewModel.profile != nil
+                    && viewModel.partnerProfile == nil
+                {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        showTooltip = true
+                    }
+                }
             }
         }
     }
@@ -339,9 +358,9 @@ struct PairingView: View {
                 }
             }
             .navigationTitle("Pair with Partner")
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-#endif
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -408,9 +427,9 @@ struct EditNameView: View {
                 }
             }
             .navigationTitle(viewModel.profile != nil ? "Edit Name" : "Create Profile")
-#if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
-#endif
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {

@@ -124,6 +124,44 @@ struct AppTheme {
     static let shadowColor = Color.black.opacity(0.1)
     static let shadowRadius: CGFloat = 8
     static let shadowOffset = CGSize(width: 0, height: 2)
+
+    // MARK: - Animations
+
+    /// Standard animation duration
+    static let animationDuration: Double = 0.3
+
+    /// Spring animation for bouncy effects
+    static let springAnimation = Animation.spring(response: 0.4, dampingFraction: 0.7)
+
+    /// Smooth ease in-out animation
+    static let smoothAnimation = Animation.easeInOut(duration: animationDuration)
+
+    // MARK: - Typography
+
+    /// Large title font
+    static func largeTitle() -> Font {
+        .system(size: 34, weight: .bold, design: .rounded)
+    }
+
+    /// Title font
+    static func title() -> Font {
+        .system(size: 28, weight: .bold, design: .rounded)
+    }
+
+    /// Headline font
+    static func headline() -> Font {
+        .system(size: 17, weight: .semibold, design: .rounded)
+    }
+
+    /// Body font
+    static func body() -> Font {
+        .system(size: 17, weight: .regular, design: .default)
+    }
+
+    /// Caption font
+    static func caption() -> Font {
+        .system(size: 12, weight: .regular, design: .default)
+    }
 }
 
 // MARK: - Color Extension for Hex Support

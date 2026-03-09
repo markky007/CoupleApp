@@ -2,20 +2,12 @@ import Supabase
 import SwiftUI
 
 /// Main dashboard view for authenticated users
-/// Shows point balances, upcoming events, and quick access to features
+/// Shows point balances, upcoming events, recent quests, and quick access to features
 struct DashboardView: View {
 
     @StateObject private var authService = AuthService.shared
-    @StateObject private var viewModel = AuthViewModel()
-
-    // Helper for platform-specific background color
-    private var backgroundColor: Color {
-        #if os(iOS)
-            return Color(.systemGray6)
-        #else
-            return Color(NSColor.controlBackgroundColor)
-        #endif
-    }
+    @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var viewModel = DashboardViewModel()
 
     var body: some View {
         NavigationStack {
@@ -24,21 +16,42 @@ struct DashboardView: View {
                 AppTheme.backgroundGradient
                     .ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: 24) {
-                        // Welcome section
-                        welcomeSection
+                if viewModel.isLoading {
+                    DashboardSkeletonView()
+                        .transition(.opacity)
+                } else {
+                    ScrollView {
+                        VStack(spacing: 24) {
+                            // Welcome section
+                            welcomeSection
 
-                        // Points section (placeholder)
-                        pointsSection
+                            // Points section
+                            pointsSection
 
-                        // Quick actions (placeholder)
-                        quickActionsSection
+                            // Upcoming event countdown
+                            if viewModel.upcomingEvent != nil {
+                                upcomingEventSection
+                            }
 
-                        // Upcoming events (placeholder)
-                        upcomingEventsSection
+                            // Recent quests
+                            if !viewModel.recentQuests.isEmpty {
+                                recentQuestsSection
+                            }
+
+                            // Rewards preview
+                            if !viewModel.rewardsPreview.isEmpty {
+                                rewardsPreviewSection
+                            }
+
+                            // Quick actions
+                            quickActionsSection
+                        }
+                        .padding()
                     }
-                    .padding()
+                    .refreshable {
+                        await viewModel.refresh()
+                    }
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
             .navigationTitle("Dashboard")
@@ -47,7 +60,7 @@ struct DashboardView: View {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
                             Task {
-                                await viewModel.signOut()
+                                await authViewModel.signOut()
                             }
                         } label: {
                             Image(systemName: "rectangle.portrait.and.arrow.right")
@@ -58,13 +71,25 @@ struct DashboardView: View {
                     ToolbarItem(placement: .primaryAction) {
                         Button {
                             Task {
-                                await viewModel.signOut()
+                                await authViewModel.signOut()
                             }
                         } label: {
                             Image(systemName: "rectangle.portrait.and.arrow.right")
                         }
                     }
                 #endif
+            }
+            .task {
+                await viewModel.loadDashboardData()
+            }
+            .alert("Error", isPresented: $viewModel.showError) {
+                Button("OK") {
+                    viewModel.dismissError()
+                }
+            } message: {
+                if let errorMessage = viewModel.errorMessage {
+                    Text(errorMessage)
+                }
             }
         }
     }
@@ -86,19 +111,24 @@ struct DashboardView: View {
                     .foregroundStyle(.white)
             }
 
-            Text("Welcome to Couple Quest!")
+            Text("Welcome, \(viewModel.userName)!")
                 .font(.title2)
                 .fontWeight(.bold)
 
-            if let userId = authService.currentUser?.id {
-                Text("User ID: \(userId.uuidString.prefix(8))...")
-                    .font(.caption)
+            if viewModel.partnerProfile != nil {
+                Text("Paired with \(viewModel.partnerName)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            } else {
+                Text("Not paired yet")
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
             }
         }
         .frame(maxWidth: .infinity)
         .padding()
         .cardStyle()
+        .transition(.scale.combined(with: .opacity))
     }
 
     private var pointsSection: some View {
@@ -114,7 +144,7 @@ struct DashboardView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
-                    Text("0")
+                    Text("\(viewModel.userPoints)")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.pointsGradient)
                 }
@@ -128,7 +158,7 @@ struct DashboardView: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
-                    Text("0")
+                    Text("\(viewModel.partnerPoints)")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.partnerGradient)
                 }
@@ -136,6 +166,158 @@ struct DashboardView: View {
                 .padding()
                 .cardStyle()
             }
+        }
+    }
+
+    private var upcomingEventSection: some View {
+        VStack(spacing: 16) {
+            Text("Upcoming Event")
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let event = viewModel.upcomingEvent, let daysUntil = viewModel.daysUntilEvent {
+                VStack(spacing: 12) {
+                    HStack {
+                        Image(systemName: "calendar")
+                            .font(.title2)
+                            .foregroundStyle(AppTheme.secondaryGradient)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(event.title)
+                                .font(.headline)
+
+                            if daysUntil == 0 {
+                                Text("Today!")
+                                    .font(.subheadline)
+                                    .foregroundColor(.green)
+                            } else if daysUntil == 1 {
+                                Text("Tomorrow")
+                                    .font(.subheadline)
+                                    .foregroundColor(.orange)
+                            } else {
+                                Text("\(daysUntil) days away")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+
+                        Spacer()
+
+                        // Countdown badge
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.secondaryGradient)
+                                .frame(width: 60, height: 60)
+
+                            VStack(spacing: 2) {
+                                Text("\(daysUntil)")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                Text("days")
+                                    .font(.caption2)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .cardStyle()
+            }
+        }
+    }
+
+    private var recentQuestsSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Recent Quests")
+                    .font(.headline)
+
+                Spacer()
+
+                NavigationLink(destination: QuestBoardView()) {
+                    Text("View All")
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.primaryGradient)
+                }
+            }
+
+            VStack(spacing: 12) {
+                ForEach(viewModel.recentQuests) { quest in
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(quest.title)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+
+                            Text("\(quest.points) points")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "checkmark.circle")
+                            .foregroundStyle(AppTheme.successGradient)
+                    }
+                    .padding(.vertical, 8)
+
+                    if quest.id != viewModel.recentQuests.last?.id {
+                        Divider()
+                    }
+                }
+            }
+            .padding()
+            .cardStyle()
+        }
+    }
+
+    private var rewardsPreviewSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Available Rewards")
+                    .font(.headline)
+
+                Spacer()
+
+                NavigationLink(destination: RewardShopView()) {
+                    Text("View All")
+                        .font(.subheadline)
+                        .foregroundStyle(AppTheme.primaryGradient)
+                }
+            }
+
+            VStack(spacing: 12) {
+                ForEach(viewModel.rewardsPreview) { reward in
+                    HStack {
+                        Image(systemName: "gift.fill")
+                            .foregroundStyle(AppTheme.warningGradient)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(reward.title)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+
+                            Text("\(reward.pointsCost) points")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 8)
+
+                    if reward.id != viewModel.rewardsPreview.last?.id {
+                        Divider()
+                    }
+                }
+            }
+            .padding()
+            .cardStyle()
         }
     }
 
@@ -164,13 +346,14 @@ struct DashboardView: View {
                 }
                 .buttonStyle(.plain)
 
-                // TODO: Events feature - temporarily disabled due to date encoding issues
-                // Will be fixed in future update
-                QuickActionButton(
-                    icon: "calendar",
-                    title: "Events",
-                    color: .green
-                )
+                NavigationLink(destination: EventListView()) {
+                    QuickActionButtonContent(
+                        icon: "calendar",
+                        title: "Events",
+                        color: .green
+                    )
+                }
+                .buttonStyle(.plain)
 
                 NavigationLink(destination: TransactionHistoryView()) {
                     QuickActionButtonContent(
@@ -180,24 +363,16 @@ struct DashboardView: View {
                     )
                 }
                 .buttonStyle(.plain)
-            }
-        }
-    }
 
-    private var upcomingEventsSection: some View {
-        VStack(spacing: 16) {
-            Text("Upcoming Events")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            VStack(spacing: 12) {
-                Text("Events feature coming soon")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                NavigationLink(destination: ProfileView()) {
+                    QuickActionButtonContent(
+                        icon: "person.circle",
+                        title: "Profile",
+                        color: .pink
+                    )
+                }
+                .buttonStyle(.plain)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .cardStyle()
         }
     }
 }
@@ -208,6 +383,7 @@ struct QuickActionButtonContent: View {
     let icon: String
     let title: String
     let color: Color
+    @State private var isPressed = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -229,19 +405,14 @@ struct QuickActionButtonContent: View {
         .frame(maxWidth: .infinity)
         .padding()
         .cardStyle()
-    }
-}
-
-struct QuickActionButton: View {
-    let icon: String
-    let title: String
-    let color: Color
-
-    var body: some View {
-        Button {
-            // TODO: Navigate to respective screen
-        } label: {
-            QuickActionButtonContent(icon: icon, title: title, color: color)
+        .scaleEffect(isPressed ? 0.95 : 1.0)
+        .animation(AppTheme.springAnimation, value: isPressed)
+        .onTapGesture {
+            HapticManager.shared.light()
+            isPressed = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isPressed = false
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import SwiftUI
 struct RewardRowView: View {
     let reward: Reward
     @ObservedObject var viewModel: RewardViewModel
+    @State private var isPressed = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -54,7 +55,17 @@ struct RewardRowView: View {
                 Spacer()
 
                 Button {
-                    viewModel.confirmRedemption(for: reward)
+                    HapticManager.shared.medium()
+                    withAnimation(AppTheme.springAnimation) {
+                        isPressed = true
+                    }
+
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation(AppTheme.springAnimation) {
+                            isPressed = false
+                        }
+                        viewModel.confirmRedemption(for: reward)
+                    }
                 } label: {
                     Text("Redeem")
                         .font(.subheadline)
@@ -74,10 +85,11 @@ struct RewardRowView: View {
                         .cornerRadius(AppTheme.cornerRadiusMedium)
                         .shadow(
                             color: AppTheme.shadowColor,
-                            radius: 4,
+                            radius: isPressed ? 2 : 4,
                             x: 0,
-                            y: 2
+                            y: isPressed ? 1 : 2
                         )
+                        .scaleEffect(isPressed ? 0.95 : 1.0)
                 }
                 .disabled(!viewModel.canAfford(reward) || viewModel.isLoading)
             }

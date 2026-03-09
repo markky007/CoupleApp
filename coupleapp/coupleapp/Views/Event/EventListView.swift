@@ -6,9 +6,11 @@ struct EventListView: View {
     // MARK: - Properties
 
     @StateObject private var viewModel = EventViewModel()
+    @StateObject private var onboardingManager = OnboardingManager.shared
     @State private var showCreateSheet = false
     @State private var selectedEvent: Event?
     @State private var showEditSheet = false
+    @State private var showTooltip = false
 
     // MARK: - Body
 
@@ -103,6 +105,22 @@ struct EventListView: View {
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
+            .tooltip(
+                message:
+                    "Track special dates and get reminders! Events can be set to recur annually.",
+                isShowing: $showTooltip,
+                onDismiss: {
+                    onboardingManager.hasSeenEventTooltip = true
+                }
+            )
+            .task {
+                // Show tooltip for first-time users
+                if !onboardingManager.hasSeenEventTooltip && !viewModel.events.isEmpty {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        showTooltip = true
+                    }
+                }
+            }
         }
     }
 
@@ -110,29 +128,60 @@ struct EventListView: View {
 
     private var emptyStateView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "calendar.badge.plus")
-                .font(.system(size: 60))
-                .foregroundStyle(AppTheme.secondaryGradient)
+            ZStack {
+                Circle()
+                    .fill(AppTheme.secondaryGradient)
+                    .frame(width: 120, height: 120)
+                    .shadow(color: AppTheme.shadowColor, radius: 10, x: 0, y: 5)
+
+                Image(systemName: "calendar.badge.plus")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 60, height: 60)
+                    .foregroundStyle(.white)
+            }
 
             Text("No Events Yet")
                 .font(.title2)
-                .fontWeight(.semibold)
+                .fontWeight(.bold)
 
-            Text("Create your first event to start tracking special dates")
-                .font(.body)
-                .foregroundColor(AppTheme.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+            Text(
+                "Create your first event to track special dates and never miss important moments together!"
+            )
+            .font(.body)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 32)
 
             Button {
+                HapticManager.shared.medium()
                 showCreateSheet = true
             } label: {
-                Text("Create Event")
+                Label("Create Your First Event", systemImage: "plus.circle.fill")
                     .fontWeight(.semibold)
             }
             .buttonStyle(GradientButtonStyle(gradient: AppTheme.primaryGradient))
-            .padding(.horizontal, 40)
-            .padding(.top, 10)
+            .padding(.horizontal, 32)
+            .padding(.top, 8)
+
+            // Tips section
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "lightbulb.fill")
+                        .foregroundColor(.yellow)
+                    Text("Event Ideas")
+                        .font(.headline)
+                }
+
+                TipRow(icon: "heart.fill", text: "Anniversary dates")
+                TipRow(icon: "birthday.cake", text: "Birthdays and celebrations")
+                TipRow(icon: "airplane", text: "Vacation plans")
+                TipRow(icon: "bell", text: "Get reminders 3 days and 1 day before")
+            }
+            .padding()
+            .cardStyle()
+            .padding(.horizontal, 32)
+            .padding(.top, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

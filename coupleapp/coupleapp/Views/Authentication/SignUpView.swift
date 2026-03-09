@@ -40,13 +40,6 @@ struct SignUpView: View {
             .navigationBarTitleDisplayMode(.large)
         #endif
         .disabled(viewModel.isLoading)
-        .alert("Error", isPresented: $viewModel.showError) {
-            Button("OK") {
-                viewModel.dismissError()
-            }
-        } message: {
-            Text(viewModel.errorMessage ?? "An error occurred")
-        }
         .alert("Success", isPresented: $viewModel.showSuccess) {
             Button("OK") {
                 viewModel.dismissSuccess()
@@ -211,10 +204,12 @@ struct SignUpView: View {
                     }
                 }
             }
-            .buttonStyle(GradientButtonStyle(
-                gradient: AppTheme.primaryGradient,
-                isDisabled: !viewModel.canSignUp || viewModel.isLoading
-            ))
+            .buttonStyle(
+                GradientButtonStyle(
+                    gradient: AppTheme.primaryGradient,
+                    isDisabled: !viewModel.canSignUp || viewModel.isLoading
+                )
+            )
             .disabled(!viewModel.canSignUp || viewModel.isLoading)
 
             // Terms and privacy

@@ -29,6 +29,11 @@ class RewardViewModel: ObservableObject {
     @Published var showSuccess = false
     @Published var successMessage: String?
 
+    /// Success animation state
+    @Published var showSuccessAnimation = false
+    @Published var successAnimationTitle: String?
+    @Published var successAnimationMessage: String?
+
     /// Redemption confirmation state
     @Published var showRedemptionConfirmation = false
     @Published var selectedReward: Reward?
@@ -108,9 +113,10 @@ class RewardViewModel: ObservableObject {
             // Update local point balance
             userPoints -= reward.pointsCost
 
-            // Show success message
-            successMessage = "Successfully redeemed: \(reward.title)"
-            showSuccess = true
+            // Show success animation
+            successAnimationTitle = "Reward Redeemed!"
+            successAnimationMessage = "Enjoy your \(reward.title)"
+            showSuccessAnimation = true
 
             // Clear selected reward
             selectedReward = nil
