@@ -10,9 +10,36 @@ struct RewardRowView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(reward.title)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                    HStack(spacing: 8) {
+                        Text(reward.title)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        // Badge to distinguish reward type
+                        if reward.isSystemReward {
+                            Text("SYSTEM")
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Capsule()
+                                        .fill(AppTheme.secondaryGradient)
+                                )
+                        } else {
+                            Text("CUSTOM")
+                                .font(.caption2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(
+                                    Capsule()
+                                        .fill(AppTheme.partnerGradient)
+                                )
+                        }
+                    }
 
                     HStack(spacing: 4) {
                         Image(systemName: "star.fill")

@@ -12,6 +12,9 @@ class RewardViewModel: ObservableObject {
     /// Array of available rewards
     @Published var rewards: [Reward] = []
 
+    /// Array of pending reward approvals
+    @Published var pendingApprovals: [Reward] = []
+
     /// Current user's point balance
     @Published var userPoints: Int = 0
 
@@ -134,5 +137,123 @@ class RewardViewModel: ObservableObject {
     /// - Returns: True if user has sufficient points
     func canAfford(_ reward: Reward) -> Bool {
         userPoints >= reward.pointsCost
+    }
+
+    // MARK: - Custom Reward Operations
+
+    /// Creates a custom reward proposal
+    /// - Parameters:
+    ///   - title: Reward title
+    ///   - pointsCost: Points required to redeem
+    func createRewardProposal(title: String, pointsCost: Int) async {
+        guard let userId = authService.currentUserId else {
+            errorMessage = "User not authenticated"
+            showError = true
+            return
+        }
+
+        // Validate at UI layer
+        guard Reward.isValidTitle(title) else {
+            errorMessage = "Reward title must be 1-100 characters"
+            showError = true
+            return
+        }
+
+        guard Reward.isValidPointsCost(pointsCost) else {
+            errorMessage = "Points cost must be between 1 and 10,000"
+            showError = true
+            return
+        }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            _ = try await rewardService.createRewardProposal(
+                title: title,
+                pointsCost: pointsCost,
+                createdBy: userId
+            )
+
+            successMessage = "Reward proposal created! Waiting for partner approval."
+            showSuccess = true
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+        }
+    }
+
+    /// Loads pending reward approvals for current user
+    func loadPendingApprovals() async {
+        guard let userId = authService.currentUserId else {
+            errorMessage = "User not authenticated"
+            showError = true
+            return
+        }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            pendingApprovals = try await rewardService.fetchPendingApprovals(userId: userId)
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+        }
+    }
+
+    /// Approves a pending reward
+    /// - Parameter reward: Reward to approve
+    func approveReward(_ reward: Reward) async {
+        guard let userId = authService.currentUserId else {
+            errorMessage = "User not authenticated"
+            showError = true
+            return
+        }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await rewardService.approveReward(rewardId: reward.id, approvingUserId: userId)
+
+            // Remove from pending approvals
+            pendingApprovals.removeAll { $0.id == reward.id }
+
+            // Reload active rewards to show the newly approved reward
+            await fetchRewards()
+
+            successMessage = "Reward approved!"
+            showSuccess = true
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+        }
+    }
+
+    /// Rejects a pending reward
+    /// - Parameter reward: Reward to reject
+    func rejectReward(_ reward: Reward) async {
+        guard let userId = authService.currentUserId else {
+            errorMessage = "User not authenticated"
+            showError = true
+            return
+        }
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await rewardService.rejectReward(rewardId: reward.id, rejectingUserId: userId)
+
+            // Remove from pending approvals
+            pendingApprovals.removeAll { $0.id == reward.id }
+
+            successMessage = "Reward rejected"
+            showSuccess = true
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+        }
     }
 }

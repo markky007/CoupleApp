@@ -1,0 +1,242 @@
+# Implementation Plan: Partner-Approved Rewards
+
+## Overview
+
+This implementation plan breaks down the Partner-Approved Rewards feature into discrete coding tasks. The feature extends the existing Couple Quest reward system to support user-generated custom rewards that require partner approval. The implementation follows the existing MVVM architecture with SwiftUI views, ViewModels, and a service layer for Supabase integration.
+
+The tasks are organized to build incrementally: database schema first, then service layer, then data models, then ViewModel logic, and finally UI components. Each task includes references to specific requirements and design properties to ensure traceability.
+
+## Tasks
+
+- [ ] 1. Set up database schema and RLS policies
+  - [x] 1.1 Create database migration for rewards table schema updates
+    - Add created_by UUID column with foreign key to profiles(id)
+    - Add status TEXT column with CHECK constraint (pending, approved, rejected)
+    - Add is_system_reward BOOLEAN column with default false
+    - Create indexes on created_by, status, and is_system_reward columns
+    - Set default values for existing rewards (status='approved', is_system_reward=true)
+    - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5_
+  - [ ]\* 1.2 Write property test for schema constraints
+    - **Property 15: Reward status is always valid**
+    - **Validates: Requirements 8.2**
+  - [x] 1.3 Create Row Level Security policies for rewards table
+    - Implement "Users can view accessible rewards" SELECT policy (system rewards + own custom rewards + partner's custom rewards)
+    - Implement "Users can create custom rewards" INSERT policy (auth.uid() = created_by, is_system_reward=false, status=pending)
+    - Implement "Partners can update pending rewards" UPDATE policy (only partners can approve/reject)
+    - Enable RLS on rewards table
+    - _Requirements: 6.1, 6.3, 6.4, 4.5, 5.5, 12.1, 12.2, 12.3_
+  - [ ]\* 1.4 Write property tests for RLS policies
+    - **Property 17: Custom rewards are private to couples**
+    - **Validates: Requirements 6.1, 6.3**
+    - **Property 18: Unpaired users see only their own custom rewards**
+    - **Validates: Requirements 6.4**
+
+- [ ] 2. Extend Reward data model
+  - [x] 2.1 Update Reward struct with new fields
+    - Add createdBy: UUID? property
+    - Add status: RewardStatus enum property
+    - Add isSystemReward: Bool property
+    - Update CodingKeys to map snake_case database fields
+    - Add RewardStatus enum with cases: pending, approved, rejected
+    - _Requirements: 8.1, 8.2, 8.3_
+  - [ ]\* 2.2 Write property test for Reward model validation
+    - **Property 16: System rewards can have null creator**
+    - **Validates: Requirements 8.4**
+
+- [ ] 3. Implement RewardError enum
+  - [x] 3.1 Create RewardError enum with all error cases
+    - Define error cases: invalidTitle, invalidPointsCost, notFound, alreadyProcessed, unauthorizedApproval, noPartner, creationFailed, approvalFailed, rejectionFailed, fetchFailed
+    - Implement LocalizedError protocol with user-friendly error descriptions
+    - _Requirements: 10.6_
+  - [ ]\* 3.2 Write property test for error messages
+    - **Property 20: Service errors return descriptive messages**
+    - **Validates: Requirements 10.6**
+
+- [ ] 4. Extend RewardService with custom reward methods
+  - [x] 4.1 Implement createRewardProposal method
+    - Validate title (1-100 characters, non-empty)
+    - Validate pointsCost (1-10,000)
+    - Get current user ID from AuthService
+    - Insert reward with status='pending', isSystemReward=false, createdBy=userId
+    - Return created Reward object
+    - Throw RewardError on validation or database failures
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 10.1_
+  - [ ]\* 4.2 Write property tests for reward creation
+    - **Property 1: Custom reward creation sets correct metadata**
+    - **Validates: Requirements 1.1, 1.2, 1.3, 1.6**
+    - **Property 2: Invalid reward data is rejected**
+    - **Validates: Requirements 1.4, 1.5**
+  - [x] 4.3 Implement fetchPendingApprovals method
+    - Get current user's profile with partnerId from ProfileService
+    - Query rewards where status='pending' AND created_by=partnerId
+    - Exclude rewards created by current user
+    - Return array of Reward objects
+    - Throw RewardError on database failures
+    - _Requirements: 3.1, 3.4, 10.2_
+  - [ ]\* 4.4 Write property tests for approval queue filtering
+    - **Property 5: Approval queue shows only partner's pending rewards**
+    - **Validates: Requirements 3.1, 3.4**
+    - **Property 6: Pending reward display includes required information**
+    - **Validates: Requirements 3.2**
+  - [x] 4.5 Implement approveReward method
+    - Get current user's profile with partnerId from ProfileService
+    - Fetch reward by ID and verify status='pending'
+    - Verify current user's partnerId equals reward.createdBy (authorization check)
+    - Update reward: status='approved', isActive=true, updatedAt=now
+    - Use atomic transaction for update
+    - Throw RewardError.unauthorizedApproval if partner validation fails
+    - Throw RewardError.alreadyProcessed if reward not pending
+    - _Requirements: 4.1, 4.2, 4.4, 4.5, 10.3, 12.1, 12.2_
+  - [ ]\* 4.6 Write property tests for reward approval
+    - **Property 7: Approval updates reward to approved and active state**
+    - **Validates: Requirements 4.1, 4.2, 4.4**
+    - **Property 8: Approved rewards are visible to both partners**
+    - **Validates: Requirements 4.3**
+    - **Property 9: Only partners can approve or reject rewards**
+    - **Validates: Requirements 4.5, 5.5, 12.1, 12.2, 12.3**
+  - [x] 4.7 Implement rejectReward method
+    - Get current user's profile with partnerId from ProfileService
+    - Fetch reward by ID and verify status='pending'
+    - Verify current user's partnerId equals reward.createdBy (authorization check)
+    - Update reward: status='rejected', updatedAt=now
+    - Use atomic transaction for update
+    - Throw RewardError.unauthorizedApproval if partner validation fails
+    - Throw RewardError.alreadyProcessed if reward not pending
+    - _Requirements: 5.1, 5.4, 5.5, 10.4, 12.1, 12.2_
+  - [ ]\* 4.8 Write property tests for reward rejection
+    - **Property 10: Rejection updates reward to rejected state**
+    - **Validates: Requirements 5.1, 5.4**
+    - **Property 11: Rejected rewards are hidden from all views**
+    - **Validates: Requirements 5.2, 5.3**
+    - **Property 19: Unpaired users cannot approve rewards**
+    - **Validates: Requirements 12.4**
+  - [x] 4.9 Update fetchActiveRewards method to filter by status
+    - Modify query to include WHERE (status='approved' OR is_system_reward=true) AND isActive=true
+    - Ensure RLS policies automatically filter custom rewards to accessible ones
+    - Return array of Reward objects
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 10.5_
+  - [ ]\* 4.10 Write property tests for active rewards filtering
+    - **Property 3: Active rewards exclude pending and rejected rewards**
+    - **Validates: Requirements 2.1, 2.2**
+    - **Property 4: Active rewards include approved and system rewards**
+    - **Validates: Requirements 2.3, 2.4**
+    - **Property 12: System rewards are visible to all users**
+    - **Validates: Requirements 7.1, 7.2**
+    - **Property 13: System rewards bypass approval workflow**
+    - **Validates: Requirements 7.3**
+  - [ ] 4.11 Implement subscribeToRewardChanges method for realtime updates
+    - Subscribe to Supabase realtime channel for rewards table changes
+    - Filter changes to relevant rewards (accessible to current user)
+    - Call handler with updated rewards list
+    - Handle subscription errors gracefully
+    - _Requirements: (Realtime notifications for approval workflow)_
+
+- [x] 5. Checkpoint - Ensure service layer tests pass
+  - Ensure all tests pass, ask the user if questions arise.
+
+- [ ] 6. Extend RewardViewModel with custom reward functionality
+  - [x] 6.1 Add new @Published properties for custom rewards
+    - Add pendingApprovals: [Reward] array
+    - Add showSuccessMessage: Bool flag
+    - Add successMessage: String property
+    - _Requirements: (ViewModel state management)_
+  - [x] 6.2 Implement createRewardProposal method in ViewModel
+    - Set isLoading = true
+    - Validate title and pointsCost at UI layer
+    - Call RewardService.createRewardProposal
+    - On success: set successMessage, showSuccessMessage=true
+    - On failure: set errorMessage with user-friendly text
+    - Set isLoading = false
+    - Update on @MainActor
+    - _Requirements: 1.1, 1.4, 1.5, 11.4_
+  - [x] 6.3 Implement loadPendingApprovals method in ViewModel
+    - Set isLoading = true
+    - Call RewardService.fetchPendingApprovals
+    - Update pendingApprovals array with results
+    - On failure: set errorMessage
+    - Set isLoading = false
+    - Update on @MainActor
+    - _Requirements: 3.1, 3.3, 11.4_
+  - [x] 6.4 Implement approveReward method in ViewModel
+    - Set isLoading = true
+    - Call RewardService.approveReward with reward ID
+    - On success: remove reward from pendingApprovals, set successMessage="Reward approved!", reload activeRewards
+    - On failure: set errorMessage
+    - Set isLoading = false
+    - Update on @MainActor
+    - _Requirements: 4.1, 4.2, 4.3, 11.3, 11.4_
+  - [x] 6.5 Implement rejectReward method in ViewModel
+    - Set isLoading = true
+    - Call RewardService.rejectReward with reward ID
+    - On success: remove reward from pendingApprovals, set successMessage="Reward rejected"
+    - On failure: set errorMessage
+    - Set isLoading = false
+    - Update on @MainActor
+    - _Requirements: 5.1, 5.2, 5.3, 11.3, 11.4_
+  - [ ] 6.6 Add realtime subscription in ViewModel init
+    - Subscribe to RewardService.subscribeToRewardChanges
+    - Update activeRewards and pendingApprovals when changes occur
+    - Handle subscription on @MainActor
+    - _Requirements: (Realtime UI updates)_
+  - [ ]\* 6.7 Write unit tests for RewardViewModel
+    - Test createRewardProposal updates state correctly
+    - Test loadPendingApprovals populates array
+    - Test approveReward removes from pendingApprovals
+    - Test rejectReward removes from pendingApprovals
+    - Test error handling sets errorMessage
+    - Test loading states
+
+- [ ] 7. Create reward creation UI
+  - [x] 7.1 Create CreateRewardView SwiftUI view
+    - Add @State variables for title and pointsCost input
+    - Add TextField for reward title with character limit (100)
+    - Add TextField for point cost with number validation (1-10,000)
+    - Add "Create Reward" button that calls viewModel.createRewardProposal
+    - Display validation errors inline
+    - Show loading indicator during creation
+    - Show success message on successful creation
+    - Dismiss view after successful creation
+    - _Requirements: 11.1, 11.3, 11.4_
+  - [x] 7.2 Add navigation to CreateRewardView from main rewards screen
+    - Add "Create Custom Reward" button in rewards list
+    - Present CreateRewardView as sheet
+    - _Requirements: 11.1_
+
+- [ ] 8. Create approval queue UI
+  - [x] 8.1 Create ApprovalQueueView SwiftUI view
+    - Add List displaying pendingApprovals from ViewModel
+    - For each reward: display title, point cost, creator name
+    - Add "Approve" button (green) calling viewModel.approveReward
+    - Add "Reject" button (red) calling viewModel.rejectReward
+    - Show empty state when pendingApprovals is empty ("No pending approvals")
+    - Show loading indicator during approval/rejection
+    - Display success/error messages
+    - _Requirements: 3.2, 3.3, 11.2, 11.3, 11.4_
+  - [x] 8.2 Add navigation to ApprovalQueueView from main navigation
+    - Add "Pending Approvals" tab or button in main navigation
+    - Show badge with count of pending approvals
+    - _Requirements: 11.2_
+
+- [ ] 9. Update reward shop UI to distinguish reward types
+  - [x] 9.1 Modify existing reward list view to show reward type
+    - Add visual indicator for custom rewards (e.g., icon or badge)
+    - Add visual indicator for system rewards (e.g., different color)
+    - Ensure approved custom rewards appear alongside system rewards
+    - _Requirements: 11.5, 2.3, 4.3_
+
+- [x] 10. Final checkpoint - Integration testing
+  - Ensure all tests pass, ask the user if questions arise.
+  - Test end-to-end flow: create reward → partner approves → appears in shop
+  - Test end-to-end flow: create reward → partner rejects → hidden from all views
+  - Test privacy: verify custom rewards not visible to other couples
+  - Test realtime updates: verify UI updates when partner approves/rejects
+
+## Notes
+
+- Tasks marked with `*` are optional property-based tests and can be skipped for faster MVP
+- Each task references specific requirements for traceability
+- The implementation uses Swift and SwiftUI following the existing app architecture
+- Database changes must be applied via Supabase migrations before implementing service layer
+- RLS policies enforce privacy automatically, but service layer includes additional validation
+- Realtime subscriptions provide instant UI updates when partner approves/rejects rewards
+- All async operations are handled on @MainActor in ViewModels for thread safety

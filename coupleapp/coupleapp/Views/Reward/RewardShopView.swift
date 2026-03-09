@@ -5,6 +5,8 @@ import SwiftUI
 struct RewardShopView: View {
 
     @StateObject private var viewModel = RewardViewModel()
+    @State private var showCreateReward = false
+    @State private var showApprovalQueue = false
 
     var body: some View {
         NavigationStack {
@@ -22,11 +24,48 @@ struct RewardShopView: View {
                 }
             }
             .navigationTitle("Reward Shop")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showApprovalQueue = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "bell.badge.fill")
+                            if !viewModel.pendingApprovals.isEmpty {
+                                Text("\(viewModel.pendingApprovals.count)")
+                                    .font(.caption2)
+                                    .fontWeight(.bold)
+                            }
+                        }
+                        .foregroundStyle(AppTheme.secondaryGradient)
+                    }
+                }
+
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showCreateReward = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(AppTheme.primaryGradient)
+                    }
+                }
+            }
+            .sheet(isPresented: $showCreateReward) {
+                CreateRewardView(viewModel: viewModel)
+            }
+            .sheet(isPresented: $showApprovalQueue) {
+                NavigationStack {
+                    ApprovalQueueView(viewModel: viewModel)
+                }
+            }
             .refreshable {
                 await viewModel.fetchRewards()
+                await viewModel.loadPendingApprovals()
             }
             .task {
                 await viewModel.fetchRewards()
+                await viewModel.loadPendingApprovals()
             }
             .alert("Error", isPresented: $viewModel.showError) {
                 Button("OK") {

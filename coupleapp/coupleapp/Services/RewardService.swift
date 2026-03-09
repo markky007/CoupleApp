@@ -20,15 +20,23 @@ class RewardService {
     // MARK: - Reward Catalog Operations
 
     /// Fetches all active rewards available for redemption
+    /// Returns approved rewards (system rewards + custom rewards visible to user)
     /// - Returns: Array of active rewards
     /// - Throws: RewardError if fetch fails
     func fetchActiveRewards() async throws -> [Reward] {
         do {
+            // Fetch rewards that are:
+            // 1. Active (is_active = true)
+            // 2. Approved status (status = 'approved')
+            // RLS policies automatically filter custom rewards to only show:
+            // - System rewards (visible to all)
+            // - Custom rewards created by user or their partner
             let rewards: [Reward] =
                 try await client
                 .from("rewards")
                 .select()
                 .eq("is_active", value: true)
+                .eq("status", value: "approved")
                 .execute()
                 .value
 
@@ -186,6 +194,192 @@ class RewardService {
             throw RewardError.fetchFailed(error.localizedDescription)
         }
     }
+
+    // MARK: - Custom Reward Operations
+
+    /// Creates a custom reward proposal that requires partner approval
+    /// - Parameters:
+    ///   - title: Reward title/description
+    ///   - pointsCost: Points required to redeem
+    ///   - createdBy: User ID of creator
+    /// - Returns: Newly created reward with pending status
+    /// - Throws: RewardError if validation or creation fails
+    func createRewardProposal(title: String, pointsCost: Int, createdBy: UUID) async throws
+        -> Reward
+    {
+        // Validate title
+        guard Reward.isValidTitle(title) else {
+            throw RewardError.invalidTitle
+        }
+
+        // Validate points cost
+        guard Reward.isValidPointsCost(pointsCost) else {
+            throw RewardError.invalidPointsCost
+        }
+
+        // Create custom reward with pending status
+        let newReward = Reward.newCustomReward(
+            title: title,
+            pointsCost: pointsCost,
+            createdBy: createdBy
+        )
+
+        do {
+            let reward: Reward =
+                try await client
+                .from("rewards")
+                .insert(newReward)
+                .select()
+                .single()
+                .execute()
+                .value
+
+            print("✅ Custom reward proposal created: \(title) by user \(createdBy)")
+            return reward
+        } catch {
+            print("❌ Failed to create reward proposal: \(error.localizedDescription)")
+            throw RewardError.creationFailed(error.localizedDescription)
+        }
+    }
+
+    /// Fetches pending reward proposals awaiting the current user's approval
+    /// Returns rewards created by the user's partner that are in pending status
+    /// - Parameter userId: Current user's ID
+    /// - Returns: Array of pending rewards requiring approval
+    /// - Throws: RewardError if fetch fails or user has no partner
+    func fetchPendingApprovals(userId: UUID) async throws -> [Reward] {
+        do {
+            // Get user's profile to find partner ID
+            let profile = try await ProfileService.shared.fetchProfile(userId: userId)
+
+            guard let partnerId = profile.partnerId else {
+                throw RewardError.noPartner
+            }
+
+            // Fetch pending rewards created by partner
+            let rewards: [Reward] =
+                try await client
+                .from("rewards")
+                .select()
+                .eq("status", value: "pending")
+                .eq("created_by", value: partnerId)
+                .execute()
+                .value
+
+            print("✅ Fetched \(rewards.count) pending approvals for user \(userId)")
+            return rewards
+        } catch let error as RewardError {
+            throw error
+        } catch {
+            print("❌ Failed to fetch pending approvals: \(error.localizedDescription)")
+            throw RewardError.fetchFailed(error.localizedDescription)
+        }
+    }
+
+    /// Approves a pending reward proposal
+    /// Validates that the current user is the partner of the reward creator
+    /// Updates reward status to approved and sets isActive to true
+    /// - Parameters:
+    ///   - rewardId: Reward's unique identifier
+    ///   - approvingUserId: User ID of the person approving
+    /// - Throws: RewardError if validation or approval fails
+    func approveReward(rewardId: UUID, approvingUserId: UUID) async throws {
+        do {
+            // Fetch the reward to validate
+            guard let reward = try await fetchReward(rewardId: rewardId) else {
+                throw RewardError.notFound
+            }
+
+            // Check if reward is pending
+            guard reward.status == RewardStatus.pending else {
+                throw RewardError.alreadyProcessed
+            }
+
+            // Verify the approving user is the partner of the creator
+            guard let creatorId = reward.createdBy else {
+                throw RewardError.unauthorizedApproval
+            }
+
+            let approverProfile = try await ProfileService.shared.fetchProfile(
+                userId: approvingUserId)
+
+            guard approverProfile.partnerId == creatorId else {
+                throw RewardError.unauthorizedApproval
+            }
+
+            // Update reward to approved status
+            try await client
+                .from("rewards")
+                .update([
+                    "status": "approved",
+                    "is_active": "true",
+                    "updated_at": Date().ISO8601Format(),
+                ])
+                .eq("id", value: rewardId)
+                .execute()
+
+            print("✅ Reward \(rewardId) approved by user \(approvingUserId)")
+        } catch let error as RewardError {
+            throw error
+        } catch let error as ProfileError {
+            throw RewardError.approvalFailed(error.localizedDescription)
+        } catch {
+            print("❌ Failed to approve reward: \(error.localizedDescription)")
+            throw RewardError.approvalFailed(error.localizedDescription)
+        }
+    }
+
+    /// Rejects a pending reward proposal
+    /// Validates that the current user is the partner of the reward creator
+    /// Updates reward status to rejected
+    /// - Parameters:
+    ///   - rewardId: Reward's unique identifier
+    ///   - rejectingUserId: User ID of the person rejecting
+    /// - Throws: RewardError if validation or rejection fails
+    func rejectReward(rewardId: UUID, rejectingUserId: UUID) async throws {
+        do {
+            // Fetch the reward to validate
+            guard let reward = try await fetchReward(rewardId: rewardId) else {
+                throw RewardError.notFound
+            }
+
+            // Check if reward is pending
+            guard reward.status == RewardStatus.pending else {
+                throw RewardError.alreadyProcessed
+            }
+
+            // Verify the rejecting user is the partner of the creator
+            guard let creatorId = reward.createdBy else {
+                throw RewardError.unauthorizedApproval
+            }
+
+            let rejecterProfile = try await ProfileService.shared.fetchProfile(
+                userId: rejectingUserId)
+
+            guard rejecterProfile.partnerId == creatorId else {
+                throw RewardError.unauthorizedApproval
+            }
+
+            // Update reward to rejected status
+            try await client
+                .from("rewards")
+                .update([
+                    "status": "rejected",
+                    "updated_at": Date().ISO8601Format(),
+                ])
+                .eq("id", value: rewardId)
+                .execute()
+
+            print("✅ Reward \(rewardId) rejected by user \(rejectingUserId)")
+        } catch let error as RewardError {
+            throw error
+        } catch let error as ProfileError {
+            throw RewardError.rejectionFailed(error.localizedDescription)
+        } catch {
+            print("❌ Failed to reject reward: \(error.localizedDescription)")
+            throw RewardError.rejectionFailed(error.localizedDescription)
+        }
+    }
 }
 
 // MARK: - RewardError
@@ -203,6 +397,13 @@ enum RewardError: LocalizedError {
     case insufficientPoints(required: Int, available: Int)
     case insufficientPointsGeneric
     case redemptionFailed
+
+    // New errors for custom rewards and approval workflow
+    case alreadyProcessed
+    case unauthorizedApproval
+    case noPartner
+    case approvalFailed(String)
+    case rejectionFailed(String)
 
     var errorDescription: String? {
         switch self {
@@ -229,6 +430,16 @@ enum RewardError: LocalizedError {
             return "Insufficient points to redeem this reward"
         case .redemptionFailed:
             return "Reward redemption failed. Please try again."
+        case .alreadyProcessed:
+            return "This reward has already been approved or rejected"
+        case .unauthorizedApproval:
+            return "Only your partner can approve this reward"
+        case .noPartner:
+            return "You must be paired with a partner to approve rewards"
+        case .approvalFailed(let message):
+            return "Failed to approve reward: \(message)"
+        case .rejectionFailed(let message):
+            return "Failed to reject reward: \(message)"
         }
     }
 }
