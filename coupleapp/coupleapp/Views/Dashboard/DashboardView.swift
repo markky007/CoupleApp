@@ -155,11 +155,14 @@ struct DashboardView: View {
                 }
                 .buttonStyle(.plain)
 
-                QuickActionButton(
-                    icon: "gift",
-                    title: "Rewards",
-                    color: .orange
-                )
+                NavigationLink(destination: RewardShopView()) {
+                    QuickActionButtonContent(
+                        icon: "gift",
+                        title: "Rewards",
+                        color: .orange
+                    )
+                }
+                .buttonStyle(.plain)
 
                 QuickActionButton(
                     icon: "calendar",
@@ -167,11 +170,14 @@ struct DashboardView: View {
                     color: .green
                 )
 
-                QuickActionButton(
-                    icon: "clock.arrow.circlepath",
-                    title: "History",
-                    color: .purple
-                )
+                NavigationLink(destination: TransactionHistoryView()) {
+                    QuickActionButtonContent(
+                        icon: "clock.arrow.circlepath",
+                        title: "History",
+                        color: .purple
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
     }

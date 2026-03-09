@@ -156,13 +156,13 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Phase 4: Reward System & Transaction History
-  - [ ] 4.1 Create Reward and Transaction models
+  - [x] 4.1 Create Reward and Transaction models
     - Create Reward.swift model with Codable conformance
     - Create Transaction.swift model with TransactionType enum
     - Define validation rules for both models
     - _Requirements: Reward and transaction data models_
 
-  - [ ] 4.2 Implement RewardService
+  - [x] 4.2 Implement RewardService
     - Create RewardService.swift with reward operations
     - Implement fetchActiveRewards() async throws method
     - Implement createReward(title:pointsCost:) async throws method
@@ -171,7 +171,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Add balance validation before redemption
     - _Requirements: Reward management, redemption logic_
 
-  - [ ] 4.3 Implement reward redemption workflow with atomic operations
+  - [x] 4.3 Implement reward redemption workflow with atomic operations
     - Create database transaction for reward redemption
     - Validate user has sufficient points
     - Deduct points using ProfileService.updatePoints
@@ -179,7 +179,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Ensure all operations succeed or rollback on failure
     - _Requirements: Reward redemption, point deduction, atomicity_
 
-  - [ ] 4.4 Implement TransactionService
+  - [x] 4.4 Implement TransactionService
     - Create TransactionService.swift with transaction queries
     - Implement fetchUserTransactions(userId:limit:) async throws method
     - Implement fetchPartnerTransactions(userId:partnerId:limit:) async throws method
@@ -187,7 +187,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Add pagination support for transaction history
     - _Requirements: Transaction history, audit trail_
 
-  - [ ] 4.5 Create reward shop UI
+  - [x] 4.5 Create reward shop UI
     - Create RewardShopView with LazyVStack for reward list
     - Create RewardRowView component showing title and cost
     - Create RewardViewModel with @Published rewards array
@@ -196,7 +196,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Add error handling for insufficient points
     - _Requirements: Reward UI, redemption interface_
 
-  - [ ] 4.6 Create transaction history UI
+  - [x] 4.6 Create transaction history UI
     - Create TransactionHistoryView with transaction list
     - Create TransactionRowView showing type, amount, description, date
     - Implement filtering by transaction type (earn/redeem)
@@ -204,7 +204,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Display combined history for both partners
     - _Requirements: Transaction history UI_
 
-  - [ ] 4.7 Set up RLS policies for rewards and transactions
+  - [x] 4.7 Set up RLS policies for rewards and transactions
     - Create RLS policy: All users can view active rewards
     - Create RLS policy: Users can only view their own transactions
     - Create RLS policy: Transactions are immutable after creation
@@ -238,7 +238,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Test transaction history queries return correct data
     - _Requirements: Reward and transaction service correctness_
 
-  - [ ] 4.12 Checkpoint - Verify reward system and transaction history
+  - [x] 4.12 Checkpoint - Verify reward system and transaction history
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 5. Phase 5: Events & Notifications
