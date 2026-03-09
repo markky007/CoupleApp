@@ -2,27 +2,27 @@ import SwiftUI
 
 /// Sign up screen for new users
 struct SignUpView: View {
-    
+
     @StateObject private var viewModel = AuthViewModel()
     @FocusState private var focusedField: Field?
     @Environment(\.dismiss) private var dismiss
-    
+
     enum Field {
         case email, password, confirmPassword
     }
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 // Header
                 headerSection
-                
+
                 // Form
                 formSection
-                
+
                 // Password requirements
                 passwordRequirementsSection
-                
+
                 // Actions
                 actionSection
             }
@@ -30,7 +30,9 @@ struct SignUpView: View {
             .padding(.vertical, 32)
         }
         .navigationTitle("Create Account")
-        .navigationBarTitleDisplayMode(.large)
+        #if os(iOS)
+            .navigationBarTitleDisplayMode(.large)
+        #endif
         .disabled(viewModel.isLoading)
         .alert("Error", isPresented: $viewModel.showError) {
             Button("OK") {
@@ -48,9 +50,9 @@ struct SignUpView: View {
             Text(viewModel.successMessage ?? "Account created successfully")
         }
     }
-    
+
     // MARK: - View Components
-    
+
     private var headerSection: some View {
         VStack(spacing: 12) {
             Image(systemName: "person.2.fill")
@@ -58,11 +60,11 @@ struct SignUpView: View {
                 .scaledToFit()
                 .frame(width: 60, height: 60)
                 .foregroundStyle(.pink.gradient)
-            
+
             Text("Join Couple Quest")
                 .font(.title2)
                 .fontWeight(.bold)
-            
+
             Text("Start tracking chores and earning rewards")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
@@ -70,7 +72,7 @@ struct SignUpView: View {
         }
         .padding(.bottom, 8)
     }
-    
+
     private var formSection: some View {
         VStack(spacing: 16) {
             // Email field
@@ -78,32 +80,34 @@ struct SignUpView: View {
                 Text("Email")
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+
                 TextField("your@email.com", text: $viewModel.email)
                     .textFieldStyle(.roundedBorder)
                     .textContentType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.emailAddress)
+                    #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.emailAddress)
+                    #endif
                     .autocorrectionDisabled()
                     .focused($focusedField, equals: .email)
                     .submitLabel(.next)
                     .onSubmit {
                         focusedField = .password
                     }
-                
+
                 if !viewModel.email.isEmpty && !viewModel.isEmailValid {
                     Label("Please enter a valid email", systemImage: "exclamationmark.circle")
                         .font(.caption)
                         .foregroundColor(.red)
                 }
             }
-            
+
             // Password field
             VStack(alignment: .leading, spacing: 8) {
                 Text("Password")
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+
                 SecureField("Create a password", text: $viewModel.password)
                     .textFieldStyle(.roundedBorder)
                     .textContentType(.newPassword)
@@ -113,13 +117,13 @@ struct SignUpView: View {
                         focusedField = .confirmPassword
                     }
             }
-            
+
             // Confirm password field
             VStack(alignment: .leading, spacing: 8) {
                 Text("Confirm Password")
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+
                 SecureField("Confirm your password", text: $viewModel.confirmPassword)
                     .textFieldStyle(.roundedBorder)
                     .textContentType(.newPassword)
@@ -130,7 +134,7 @@ struct SignUpView: View {
                             await viewModel.signUp()
                         }
                     }
-                
+
                 if !viewModel.confirmPassword.isEmpty && !viewModel.passwordsMatch {
                     Label("Passwords do not match", systemImage: "exclamationmark.circle")
                         .font(.caption)
@@ -139,18 +143,18 @@ struct SignUpView: View {
             }
         }
     }
-    
+
     private var passwordRequirementsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Password Requirements")
                 .font(.caption)
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
-            
+
             HStack(spacing: 8) {
                 Image(systemName: viewModel.isPasswordValid ? "checkmark.circle.fill" : "circle")
                     .foregroundColor(viewModel.isPasswordValid ? .green : .secondary)
-                
+
                 Text("At least \(AppConstants.minPasswordLength) characters")
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -158,10 +162,14 @@ struct SignUpView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
-        .background(Color(.systemGray6))
+        #if os(iOS)
+            .background(Color(.systemGray6))
+        #else
+            .background(Color(NSColor.controlBackgroundColor))
+        #endif
         .cornerRadius(8)
     }
-    
+
     private var actionSection: some View {
         VStack(spacing: 16) {
             // Sign up button
@@ -186,7 +194,7 @@ struct SignUpView: View {
                 .cornerRadius(12)
             }
             .disabled(!viewModel.canSignUp || viewModel.isLoading)
-            
+
             // Terms and privacy
             Text("By signing up, you agree to our Terms of Service and Privacy Policy")
                 .font(.caption)

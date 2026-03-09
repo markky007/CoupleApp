@@ -60,6 +60,7 @@ static let anonKey = "YOUR_SUPABASE_ANON_KEY"
 ```
 
 For local development, use:
+
 - URL: `http://127.0.0.1:54321`
 - Anon Key: (provided by `supabase start` command)
 
@@ -125,6 +126,7 @@ coupleapp/
 ### Security
 
 All tables use Row Level Security (RLS) policies to ensure:
+
 - Users can only access their own data and their partner's data
 - Point balances cannot be manipulated directly
 - Transaction history is immutable
@@ -141,50 +143,89 @@ Cmd + U
 ### Run Property-Based Tests
 
 Property-based tests validate universal correctness properties:
+
 - Point balance never goes negative
 - Partner relationships are bidirectional
 - Quest completion is idempotent
 - Transactions are immutable
 
+## 🔧 Build Verification
+
+### Automated Build Check
+
+```bash
+# Verify build before committing
+./scripts/verify-build.sh
+```
+
+### Fix Common Build Issues
+
+```bash
+# Interactive menu to fix common issues
+./scripts/fix-common-issues.sh
+```
+
+### Manual Build Steps
+
+1. **Clean Build Folder**: `Cmd + Shift + K` in Xcode
+2. **Resolve Packages**: `File > Packages > Resolve Package Versions`
+3. **Clean DerivedData**:
+   ```bash
+   rm -rf ~/Library/Developer/Xcode/DerivedData/*
+   ```
+4. **Build**: `Cmd + B` in Xcode
+
+### Build Checklist
+
+See [BUILD_CHECKLIST.md](BUILD_CHECKLIST.md) for detailed guidelines on preventing build errors.
+
 ## 📱 Development Workflow
 
 ### Phase 1: Foundation & Authentication ✅
+
 - [x] Project structure setup
 - [x] Supabase configuration
 - [ ] AuthService implementation
 - [ ] Authentication views
 
 ### Phase 2: Profile & Partner Pairing
+
 - [ ] Profile model and service
 - [ ] Partner pairing logic
 - [ ] Profile views
 
 ### Phase 3: Quest System
+
 - [ ] Quest model and service
 - [ ] Real-time synchronization
 - [ ] Quest board UI
 
 ### Phase 4: Reward System
+
 - [ ] Reward model and service
 - [ ] Transaction history
 - [ ] Reward shop UI
 
 ### Phase 5: Events & Notifications
+
 - [ ] Event model and service
 - [ ] Local notifications
 - [ ] Event management UI
 
 ### Phase 6: Dashboard & Polish
+
 - [ ] Unified dashboard
 - [ ] UI polish and animations
 - [ ] Error handling
 
 ### Phase 7: Testing & Optimization
+
 - [ ] Property-based tests
 - [ ] Integration tests
 - [ ] Performance optimization
 
 ### Phase 8: Deployment
+
 - [ ] App Store preparation
 - [ ] Beta testing
 - [ ] Production release

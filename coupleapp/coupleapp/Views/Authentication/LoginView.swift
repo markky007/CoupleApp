@@ -2,27 +2,27 @@ import SwiftUI
 
 /// Login screen for existing users
 struct LoginView: View {
-    
+
     @StateObject private var viewModel = AuthViewModel()
     @FocusState private var focusedField: Field?
-    
+
     enum Field {
         case email, password
     }
-    
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
                     // Header
                     headerSection
-                    
+
                     // Form
                     formSection
-                    
+
                     // Actions
                     actionSection
-                    
+
                     // Navigation
                     navigationSection
                 }
@@ -30,7 +30,9 @@ struct LoginView: View {
                 .padding(.vertical, 32)
             }
             .navigationTitle("Welcome Back")
-            .navigationBarTitleDisplayMode(.large)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.large)
+            #endif
             .disabled(viewModel.isLoading)
             .alert("Error", isPresented: $viewModel.showError) {
                 Button("OK") {
@@ -41,9 +43,9 @@ struct LoginView: View {
             }
         }
     }
-    
+
     // MARK: - View Components
-    
+
     private var headerSection: some View {
         VStack(spacing: 12) {
             Image(systemName: "heart.fill")
@@ -51,17 +53,17 @@ struct LoginView: View {
                 .scaledToFit()
                 .frame(width: 80, height: 80)
                 .foregroundStyle(.pink.gradient)
-            
+
             Text("Couple Quest")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
-            
+
             Text("Track chores, earn rewards together")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
         .padding(.bottom, 16)
     }
-    
+
     private var formSection: some View {
         VStack(spacing: 16) {
             // Email field
@@ -69,12 +71,14 @@ struct LoginView: View {
                 Text("Email")
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+
                 TextField("your@email.com", text: $viewModel.email)
                     .textFieldStyle(.roundedBorder)
                     .textContentType(.emailAddress)
-                    .textInputAutocapitalization(.never)
-                    .keyboardType(.emailAddress)
+                    #if os(iOS)
+                        .textInputAutocapitalization(.never)
+                        .keyboardType(.emailAddress)
+                    #endif
                     .autocorrectionDisabled()
                     .focused($focusedField, equals: .email)
                     .submitLabel(.next)
@@ -82,13 +86,13 @@ struct LoginView: View {
                         focusedField = .password
                     }
             }
-            
+
             // Password field
             VStack(alignment: .leading, spacing: 8) {
                 Text("Password")
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+
                 SecureField("Enter your password", text: $viewModel.password)
                     .textFieldStyle(.roundedBorder)
                     .textContentType(.password)
@@ -102,7 +106,7 @@ struct LoginView: View {
             }
         }
     }
-    
+
     private var actionSection: some View {
         VStack(spacing: 16) {
             // Sign in button
@@ -127,7 +131,7 @@ struct LoginView: View {
                 .cornerRadius(12)
             }
             .disabled(!viewModel.canSignIn || viewModel.isLoading)
-            
+
             // Forgot password
             NavigationLink {
                 ForgotPasswordView()
@@ -138,16 +142,16 @@ struct LoginView: View {
             }
         }
     }
-    
+
     private var navigationSection: some View {
         VStack(spacing: 12) {
             Divider()
                 .padding(.vertical, 8)
-            
+
             HStack {
                 Text("Don't have an account?")
                     .foregroundColor(.secondary)
-                
+
                 NavigationLink {
                     SignUpView()
                 } label: {

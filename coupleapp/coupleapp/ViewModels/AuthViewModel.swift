@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 /// ViewModel for authentication flows
 /// Handles business logic for login, signup, and password reset

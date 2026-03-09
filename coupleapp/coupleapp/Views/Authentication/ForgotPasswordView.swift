@@ -26,7 +26,9 @@ struct ForgotPasswordView: View {
             .padding(.vertical, 32)
         }
         .navigationTitle("Reset Password")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.large)
+        #endif
         .disabled(viewModel.isLoading)
         .alert("Error", isPresented: $viewModel.showError) {
             Button("OK") {
@@ -76,8 +78,10 @@ struct ForgotPasswordView: View {
             TextField("your@email.com", text: $viewModel.email)
                 .textFieldStyle(.roundedBorder)
                 .textContentType(.emailAddress)
+                #if os(iOS)
                 .textInputAutocapitalization(.never)
                 .keyboardType(.emailAddress)
+                #endif
                 .autocorrectionDisabled()
                 .focused($isEmailFocused)
                 .submitLabel(.send)
@@ -134,7 +138,11 @@ struct ForgotPasswordView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 12)
             .padding(.vertical, 12)
+            #if os(iOS)
             .background(Color(.systemGray6))
+            #else
+            .background(Color(NSColor.controlBackgroundColor))
+            #endif
             .cornerRadius(8)
         }
     }
@@ -145,3 +153,4 @@ struct ForgotPasswordView: View {
         ForgotPasswordView()
     }
 }
+

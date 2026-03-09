@@ -7,6 +7,15 @@ struct DashboardView: View {
     @StateObject private var authService = AuthService.shared
     @StateObject private var viewModel = AuthViewModel()
     
+    // Helper for platform-specific background color
+    private var backgroundColor: Color {
+        #if os(iOS)
+        return Color(.systemGray6)
+        #else
+        return Color(NSColor.controlBackgroundColor)
+        #endif
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -62,7 +71,7 @@ struct DashboardView: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color(.systemGray6))
+        .background(backgroundColor)
         .cornerRadius(12)
     }
     
@@ -85,7 +94,7 @@ struct DashboardView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color(.systemGray6))
+                .background(backgroundColor)
                 .cornerRadius(12)
                 
                 // Partner points
@@ -100,7 +109,7 @@ struct DashboardView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color(.systemGray6))
+                .background(backgroundColor)
                 .cornerRadius(12)
             }
         }
@@ -158,7 +167,7 @@ struct DashboardView: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color(.systemGray6))
+            .background(backgroundColor)
             .cornerRadius(12)
         }
     }
@@ -187,7 +196,7 @@ struct QuickActionButton: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color(.systemGray6))
+            .background(backgroundColor)
             .cornerRadius(12)
         }
     }
