@@ -1,54 +1,59 @@
+import Combine
 import Foundation
 import Supabase
-import Combine
 
 /// Authentication service managing user sessions and auth operations
 /// Implements singleton pattern for consistent session state across the app
 /// All methods are @MainActor to ensure UI updates happen on main thread
 @MainActor
 class AuthService: ObservableObject {
-    
+
     // MARK: - Singleton
-    
+
     /// Shared instance for app-wide access
     static let shared = AuthService()
-    
+
     // MARK: - Published Properties
-    
+
     /// Current authentication session
     /// Nil when user is not authenticated
     @Published private(set) var session: Session?
-    
+
     /// Current authenticated user
     /// Convenience property derived from session
     var currentUser: User? {
         session?.user
     }
-    
+
     /// Whether user is currently authenticated
     var isAuthenticated: Bool {
         session != nil
     }
-    
+
+    /// Current user ID (convenience accessor)
+    var currentUserId: UUID? {
+        session?.user.id
+    }
+
     // MARK: - Private Properties
-    
+
     /// Task for listening to auth state changes
     private var authStateTask: Task<Void, Never>?
-    
+
     // MARK: - Initialization
-    
+
     private init() {
         // Start listening to auth state changes
         startAuthStateListener()
     }
-    
+
     deinit {
         // Cancel auth state listener when service is deallocated
         authStateTask?.cancel()
     }
-    
+
     // MARK: - Auth State Management
-    
+
     /// Starts listening to authentication state changes
     /// Automatically updates session when user signs in/out
     private func startAuthStateListener() {
@@ -60,7 +65,7 @@ class AuthService: ObservableObject {
                 // No active session on startup
                 self.session = nil
             }
-            
+
             // Listen for auth state changes
             for await authEvent in supabase.auth.authStateChanges {
                 // Update session on main thread
@@ -70,9 +75,9 @@ class AuthService: ObservableObject {
             }
         }
     }
-    
+
     // MARK: - Authentication Methods
-    
+
     /// Signs up a new user with email and password
     /// - Parameters:
     ///   - email: User's email address
@@ -84,21 +89,21 @@ class AuthService: ObservableObject {
         guard !email.isEmpty else {
             throw AuthError.invalidEmail
         }
-        
+
         guard password.count >= AppConstants.minPasswordLength else {
             throw AuthError.weakPassword
         }
-        
+
         // Attempt signup
         do {
             let response = try await supabase.auth.signUp(
                 email: email,
                 password: password
             )
-            
+
             // Session is automatically updated via auth state listener
             print("✅ Sign up successful for: \(email)")
-            
+
             // Check if email confirmation is required
             if response.session == nil {
                 print("📧 Email confirmation required")
@@ -108,7 +113,7 @@ class AuthService: ObservableObject {
             throw AuthError.signUpFailed(error.localizedDescription)
         }
     }
-    
+
     /// Signs in an existing user with email and password
     /// - Parameters:
     ///   - email: User's email address
@@ -119,18 +124,18 @@ class AuthService: ObservableObject {
         guard !email.isEmpty else {
             throw AuthError.invalidEmail
         }
-        
+
         guard !password.isEmpty else {
             throw AuthError.invalidPassword
         }
-        
+
         // Attempt sign in
         do {
             let response = try await supabase.auth.signIn(
                 email: email,
                 password: password
             )
-            
+
             // Session is automatically updated via auth state listener
             print("✅ Sign in successful for: \(email)")
             print("👤 User ID: \(response.user.id.uuidString)")
@@ -139,7 +144,7 @@ class AuthService: ObservableObject {
             throw AuthError.signInFailed(error.localizedDescription)
         }
     }
-    
+
     /// Signs out the current user
     /// - Throws: AuthError if sign out fails
     func signOut() async throws {
@@ -147,10 +152,10 @@ class AuthService: ObservableObject {
             // Already signed out
             return
         }
-        
+
         do {
             try await supabase.auth.signOut()
-            
+
             // Session is automatically cleared via auth state listener
             print("✅ Sign out successful")
         } catch {
@@ -158,7 +163,7 @@ class AuthService: ObservableObject {
             throw AuthError.signOutFailed(error.localizedDescription)
         }
     }
-    
+
     /// Sends a password reset email to the user
     /// - Parameter email: User's email address
     /// - Throws: AuthError if password reset request fails
@@ -166,7 +171,7 @@ class AuthService: ObservableObject {
         guard !email.isEmpty else {
             throw AuthError.invalidEmail
         }
-        
+
         do {
             try await supabase.auth.resetPasswordForEmail(email)
             print("✅ Password reset email sent to: \(email)")
@@ -175,7 +180,7 @@ class AuthService: ObservableObject {
             throw AuthError.passwordResetFailed(error.localizedDescription)
         }
     }
-    
+
     /// Refreshes the current session
     /// Useful for ensuring session is still valid
     /// - Throws: AuthError if refresh fails
@@ -205,7 +210,7 @@ enum AuthError: LocalizedError {
     case passwordResetFailed(String)
     case sessionRefreshFailed(String)
     case networkError
-    
+
     var errorDescription: String? {
         switch self {
         case .invalidEmail:

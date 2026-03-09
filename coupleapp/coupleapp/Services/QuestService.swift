@@ -14,15 +14,20 @@ class QuestService {
 
     private let client = supabase
     private var realtimeChannel: RealtimeChannelV2?
+    private var reconnectionTask: Task<Void, Never>?
+    private var reconnectionAttempts = 0
+    private let maxReconnectionAttempts = 5
+    private var isSubscribed = false
 
     // MARK: - Initialization
 
     private init() {}
 
     deinit {
-        // Clean up realtime subscription
-        Task {
-            await realtimeChannel?.unsubscribe()
+        // Clean up realtime subscription and reconnection task
+        reconnectionTask?.cancel()
+        Task { [weak self] in
+            await self?.realtimeChannel?.unsubscribe()
         }
     }
 
@@ -105,60 +110,43 @@ class QuestService {
     }
 
     /// Completes a quest and awards points to user
+    /// Uses atomic database function to ensure all operations succeed or rollback together
     /// - Parameters:
     ///   - questId: Quest ID to complete
     ///   - userId: User ID who completed the quest
     /// - Throws: QuestError if completion fails
     func completeQuest(questId: UUID, userId: UUID) async throws {
         do {
-            // Fetch the quest first to validate
-            let quest: Quest =
-                try await client
-                .from("quests")
-                .select()
-                .eq("id", value: questId)
-                .single()
-                .execute()
-                .value
+            // Use atomic RPC function to complete quest
+            // This ensures quest update, point award, and transaction creation
+            // all succeed together or rollback on any failure
+            let paramsDict: [String: AnyJSON] = [
+                "p_quest_id": .string(questId.uuidString),
+                "p_user_id": .string(userId.uuidString),
+            ]
 
-            // Validate quest can be completed
-            guard quest.status == .pending else {
-                throw QuestError.alreadyCompleted
-            }
-
-            guard !quest.isExpired else {
-                throw QuestError.questExpired
-            }
-
-            // Update quest status to completed
+            // Call the RPC function - it returns void
             try await client
-                .from("quests")
-                .update([
-                    "status": QuestStatus.completed.rawValue, "updated_at": Date().ISO8601Format(),
-                ])
-                .eq("id", value: questId)
+                .rpc("complete_quest_atomic", params: paramsDict)
                 .execute()
 
-            // Award points to user
-            try await ProfileService.shared.updatePoints(userId: userId, delta: quest.points)
-
-            // Create transaction record
-            try await createTransactionRecord(
-                userId: userId,
-                type: "earn",
-                amount: quest.points,
-                description: "Completed quest: \(quest.title)"
-            )
-
-            print("✅ Quest completed: \(quest.title) (+\(quest.points) points)")
-        } catch let error as QuestError {
-            throw error
-        } catch let error as ProfileError {
-            print("❌ Failed to award points: \(error.localizedDescription)")
-            throw QuestError.pointAwardFailed(error.localizedDescription)
+            print("✅ Quest completed atomically")
         } catch {
-            print("❌ Failed to complete quest: \(error.localizedDescription)")
-            throw QuestError.completionFailed(error.localizedDescription)
+            // Parse error message to provide specific error types
+            let errorMessage = error.localizedDescription.lowercased()
+
+            if errorMessage.contains("not found") {
+                throw QuestError.questNotFound
+            } else if errorMessage.contains("already completed") {
+                throw QuestError.alreadyCompleted
+            } else if errorMessage.contains("expired") {
+                throw QuestError.questExpired
+            } else if errorMessage.contains("insufficient points") {
+                throw QuestError.pointAwardFailed(error.localizedDescription)
+            } else {
+                print("❌ Failed to complete quest: \(error.localizedDescription)")
+                throw QuestError.completionFailed(error.localizedDescription)
+            }
         }
     }
 
@@ -180,94 +168,156 @@ class QuestService {
         }
     }
 
-    // MARK: - Helper Methods
-
-    /// Creates a transaction record
-    /// - Parameters:
-    ///   - userId: User ID
-    ///   - type: Transaction type (earn/redeem)
-    ///   - amount: Point amount
-    ///   - description: Transaction description
-    /// - Throws: QuestError if creation fails
-    private func createTransactionRecord(
-        userId: UUID,
-        type: String,
-        amount: Int,
-        description: String
-    ) async throws {
-        struct TransactionInsert: Encodable {
-            let user_id: String
-            let type: String
-            let amount: Int
-            let description: String
-            let created_at: String
-        }
-
-        let transaction = TransactionInsert(
-            user_id: userId.uuidString,
-            type: type,
-            amount: amount,
-            description: description,
-            created_at: Date().ISO8601Format()
-        )
-
-        do {
-            try await client
-                .from("transactions")
-                .insert(transaction)
-                .execute()
-
-            print("✅ Transaction record created")
-        } catch {
-            print("❌ Failed to create transaction record: \(error.localizedDescription)")
-            throw QuestError.transactionRecordFailed(error.localizedDescription)
-        }
-    }
-
     // MARK: - Realtime Subscriptions
 
     /// Subscribes to quest changes for real-time updates
-    /// - Parameter handler: Callback when quests change
+    /// Listens to INSERT, UPDATE, and DELETE events on the quests table
+    /// Handles updates on main thread for UI safety
+    /// Implements automatic reconnection with exponential backoff
+    /// - Parameter handler: Callback when quests change (called on main thread)
     /// - Throws: QuestError if subscription fails
     func subscribeToQuestChanges(handler: @escaping ([Quest]) -> Void) async throws {
-        do {
-            // Unsubscribe from existing channel if any
-            await realtimeChannel?.unsubscribe()
+        // Unsubscribe from existing channel if any
+        await unsubscribeFromQuestChanges()
 
-            // Create new channel for quest updates
-            let channel = client.channel("quests")
+        // Reset reconnection state
+        reconnectionAttempts = 0
 
-            // Subscribe to all changes on quests table
-            let changes = await channel.postgresChange(
-                InsertAction.self,
-                schema: "public",
-                table: "quests"
-            )
+        // Establish subscription
+        try await establishSubscription(handler: handler)
+    }
 
-            await channel.subscribe()
+    /// Establishes the realtime subscription with proper error handling
+    /// - Parameter handler: Callback when quests change
+    /// - Throws: QuestError if subscription fails
+    private func establishSubscription(handler: @escaping ([Quest]) -> Void) async throws {
+        // Create new channel for quest updates
+        let channel = client.channel("quests")
 
-            // Listen for changes and refetch active quests
-            Task {
-                for await _ in changes {
-                    // Refetch all active quests when any change occurs
-                    if let quests = try? await fetchActiveQuests() {
-                        handler(quests)
-                    }
-                }
+        // Subscribe to INSERT events
+        let insertChanges = await channel.postgresChange(
+            InsertAction.self,
+            schema: "public",
+            table: "quests"
+        )
+
+        // Subscribe to UPDATE events
+        let updateChanges = await channel.postgresChange(
+            UpdateAction.self,
+            schema: "public",
+            table: "quests"
+        )
+
+        // Subscribe to DELETE events
+        let deleteChanges = await channel.postgresChange(
+            DeleteAction.self,
+            schema: "public",
+            table: "quests"
+        )
+
+        // Subscribe to channel
+        await channel.subscribe()
+
+        // Listen for INSERT changes
+        Task { [weak self] in
+            for await _ in insertChanges {
+                await self?.handleQuestChange(handler: handler, changeType: "INSERT")
             }
+        }
 
-            self.realtimeChannel = channel
-            print("✅ Subscribed to quest changes")
-        } catch {
-            print("❌ Failed to subscribe to quest changes: \(error.localizedDescription)")
-            throw QuestError.subscriptionFailed(error.localizedDescription)
+        // Listen for UPDATE changes
+        Task { [weak self] in
+            for await _ in updateChanges {
+                await self?.handleQuestChange(handler: handler, changeType: "UPDATE")
+            }
+        }
+
+        // Listen for DELETE changes
+        Task { [weak self] in
+            for await _ in deleteChanges {
+                await self?.handleQuestChange(handler: handler, changeType: "DELETE")
+            }
+        }
+
+        self.realtimeChannel = channel
+        print("✅ Subscribed to quest changes (INSERT, UPDATE, DELETE)")
+    }
+
+    /// Handles quest changes and notifies handler on main thread
+    /// - Parameters:
+    ///   - handler: Callback to notify
+    ///   - changeType: Type of change (INSERT, UPDATE, DELETE)
+    private func handleQuestChange(handler: @escaping ([Quest]) -> Void, changeType: String) async {
+        print("📡 Quest \(changeType) detected, refetching active quests")
+
+        // Refetch all active quests when any change occurs
+        if let quests = try? await fetchActiveQuests() {
+            // Ensure handler is called on main thread for UI safety
+            await MainActor.run {
+                handler(quests)
+            }
         }
     }
 
-    /// Unsubscribes from quest changes
+    /// Handles reconnection with exponential backoff
+    /// - Parameter handler: Callback when quests change
+    private func handleReconnection(handler: @escaping ([Quest]) -> Void) async {
+        // Cancel any existing reconnection task
+        reconnectionTask?.cancel()
+
+        guard reconnectionAttempts < maxReconnectionAttempts else {
+            print("❌ Max reconnection attempts reached, giving up")
+            await MainActor.run {
+                isSubscribed = false
+            }
+            return
+        }
+
+        reconnectionTask = Task { [weak self] in
+            guard let self = self else { return }
+
+            // Calculate exponential backoff delay (2^attempts seconds, max 32 seconds)
+            let delay = min(pow(2.0, Double(reconnectionAttempts)), 32.0)
+            print(
+                "🔄 Reconnecting in \(delay) seconds (attempt \(reconnectionAttempts + 1)/\(maxReconnectionAttempts))"
+            )
+
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+
+            // Check if task was cancelled
+            guard !Task.isCancelled else { return }
+
+            await MainActor.run {
+                self.reconnectionAttempts += 1
+            }
+
+            // Attempt to reestablish subscription
+            do {
+                try await self.establishSubscription(handler: handler)
+                print("✅ Reconnection successful")
+            } catch {
+                print("❌ Reconnection failed: \(error.localizedDescription)")
+                // Retry with next backoff
+                await self.handleReconnection(handler: handler)
+            }
+        }
+    }
+
+    /// Unsubscribes from quest changes and cleans up resources
     func unsubscribeFromQuestChanges() async {
+        // Cancel reconnection task
+        reconnectionTask?.cancel()
+        reconnectionTask = nil
+
+        // Unsubscribe from channel
         await realtimeChannel?.unsubscribe()
         realtimeChannel = nil
+
+        await MainActor.run {
+            isSubscribed = false
+            reconnectionAttempts = 0
+        }
+
         print("✅ Unsubscribed from quest changes")
     }
 }

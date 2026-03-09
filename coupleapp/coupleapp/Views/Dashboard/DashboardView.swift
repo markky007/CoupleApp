@@ -38,25 +38,25 @@ struct DashboardView: View {
             .navigationTitle("Dashboard")
             .toolbar {
                 #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        Task {
-                            await viewModel.signOut()
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            Task {
+                                await viewModel.signOut()
+                            }
+                        } label: {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
                         }
-                    } label: {
-                        Image(systemName: "rectangle.portrait.and.arrow.right")
                     }
-                }
                 #else
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        Task {
-                            await viewModel.signOut()
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            Task {
+                                await viewModel.signOut()
+                            }
+                        } label: {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
                         }
-                    } label: {
-                        Image(systemName: "rectangle.portrait.and.arrow.right")
                     }
-                }
                 #endif
             }
         }
@@ -135,11 +135,14 @@ struct DashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                QuickActionButton(
-                    icon: "list.bullet.clipboard",
-                    title: "Quests",
-                    color: .blue
-                )
+                NavigationLink(destination: QuestBoardView()) {
+                    QuickActionButtonContent(
+                        icon: "list.bullet.clipboard",
+                        title: "Quests",
+                        color: .blue
+                    )
+                }
+                .buttonStyle(.plain)
 
                 QuickActionButton(
                     icon: "gift",
@@ -188,6 +191,38 @@ struct DashboardView: View {
 
 // MARK: - Quick Action Button
 
+struct QuickActionButtonContent: View {
+    let icon: String
+    let title: String
+    let color: Color
+
+    // Helper for platform-specific background color
+    private var backgroundColor: Color {
+        #if os(iOS)
+            return Color(.systemGray6)
+        #else
+            return Color(NSColor.controlBackgroundColor)
+        #endif
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 32))
+                .foregroundColor(color)
+
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(backgroundColor)
+        .cornerRadius(12)
+    }
+}
+
 struct QuickActionButton: View {
     let icon: String
     let title: String
@@ -206,20 +241,7 @@ struct QuickActionButton: View {
         Button {
             // TODO: Navigate to respective screen
         } label: {
-            VStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 32))
-                    .foregroundColor(color)
-
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(backgroundColor)
-            .cornerRadius(12)
+            QuickActionButtonContent(icon: icon, title: title, color: color)
         }
     }
 }

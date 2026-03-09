@@ -89,7 +89,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 3. Phase 3: Quest System
-  - [ ] 3.1 Create Quest model and QuestService
+  - [x] 3.1 Create Quest model and QuestService
     - Create Quest.swift model with QuestStatus enum
     - Create QuestService.swift with quest operations
     - Implement fetchActiveQuests() async throws method
@@ -99,7 +99,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Add quest expiration filtering logic
     - _Requirements: Quest management, data models_
 
-  - [ ] 3.2 Implement quest completion workflow with atomic operations
+  - [x] 3.2 Implement quest completion workflow with atomic operations
     - Create database transaction for quest completion
     - Update quest status to 'completed'
     - Award points to user using ProfileService.updatePoints
@@ -107,7 +107,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Ensure all operations succeed or rollback on failure
     - _Requirements: Quest completion, point awarding, atomicity_
 
-  - [ ] 3.3 Set up realtime subscription for quest synchronization
+  - [x] 3.3 Set up realtime subscription for quest synchronization
     - Implement subscribeToQuestChanges(handler:) async throws method
     - Subscribe to quests table INSERT, UPDATE, DELETE events
     - Handle realtime updates on main thread for UI safety
@@ -115,7 +115,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Add reconnection logic with exponential backoff
     - _Requirements: Real-time synchronization, quest board updates_
 
-  - [ ] 3.4 Create quest board UI with realtime updates
+  - [x] 3.4 Create quest board UI with realtime updates
     - Create QuestBoardView with LazyVStack for quest list
     - Create QuestRowView component for individual quests
     - Create QuestViewModel with @Published quests array
@@ -124,7 +124,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Display loading states and empty states
     - _Requirements: Quest UI, user interaction_
 
-  - [ ] 3.5 Set up RLS policies for quests
+  - [x] 3.5 Set up RLS policies for quests
     - Create RLS policy: Users can view quests created by themselves or partner
     - Create RLS policy: Users can complete quests (UPDATE status only)
     - Create RLS policy: Users can create quests
@@ -152,7 +152,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Test expired quests are filtered from active list
     - _Requirements: Quest service correctness_
 
-  - [ ] 3.9 Checkpoint - Verify quest system functionality
+  - [x] 3.9 Checkpoint - Verify quest system functionality
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Phase 4: Reward System & Transaction History

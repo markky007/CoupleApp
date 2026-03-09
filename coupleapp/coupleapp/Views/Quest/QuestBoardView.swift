@@ -19,6 +19,7 @@ struct QuestBoardView: View {
             }
             .navigationTitle("Quest Board")
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         viewModel.showCreateSheet = true
@@ -26,6 +27,15 @@ struct QuestBoardView: View {
                         Image(systemName: "plus.circle.fill")
                     }
                 }
+                #else
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        viewModel.showCreateSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                    }
+                }
+                #endif
             }
             .sheet(isPresented: $viewModel.showCreateSheet) {
                 CreateQuestView(viewModel: viewModel)
@@ -142,7 +152,7 @@ struct QuestRowView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
         .contextMenu {
             Button(role: .destructive) {
@@ -208,13 +218,23 @@ struct CreateQuestView: View {
                 }
             }
             .navigationTitle("New Quest")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
                         dismiss()
                     }
                 }
+                #else
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                #endif
             }
             .onAppear {
                 isTitleFocused = true

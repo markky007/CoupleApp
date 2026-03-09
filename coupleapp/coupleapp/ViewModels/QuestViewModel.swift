@@ -1,6 +1,5 @@
 import Combine
 import Foundation
-import Supabase
 import SwiftUI
 
 /// ViewModel for quest management
@@ -65,7 +64,7 @@ class QuestViewModel: ObservableObject {
     ///   - title: Quest title
     ///   - points: Points to award
     func createQuest(title: String, points: Int) async {
-        guard let userId = authService.currentUser?.id else {
+        guard let userId = authService.currentUserId else {
             showError(message: "User not authenticated")
             return
         }
@@ -94,7 +93,7 @@ class QuestViewModel: ObservableObject {
     /// Completes a quest
     /// - Parameter quest: Quest to complete
     func completeQuest(_ quest: Quest) async {
-        guard let userId = authService.currentUser?.id else {
+        guard let userId = authService.currentUserId else {
             showError(message: "User not authenticated")
             return
         }
