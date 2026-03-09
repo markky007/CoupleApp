@@ -9,6 +9,10 @@ struct QuestBoardView: View {
     var body: some View {
         NavigationStack {
             ZStack {
+                // Background gradient
+                AppTheme.backgroundGradient
+                    .ignoresSafeArea()
+
                 if viewModel.isLoading && viewModel.quests.isEmpty {
                     ProgressView("Loading quests...")
                 } else if viewModel.quests.isEmpty {
@@ -20,21 +24,22 @@ struct QuestBoardView: View {
             .navigationTitle("Quest Board")
             .toolbar {
                 #if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        viewModel.showCreateSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            viewModel.showCreateSheet = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(AppTheme.primaryGradient)
+                        }
                     }
-                }
                 #else
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        viewModel.showCreateSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            viewModel.showCreateSheet = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                        }
                     }
-                }
                 #endif
             }
             .sheet(isPresented: $viewModel.showCreateSheet) {
@@ -78,11 +83,18 @@ struct QuestBoardView: View {
 
     private var emptyStateView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "list.bullet.clipboard")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 80, height: 80)
-                .foregroundStyle(.secondary)
+            ZStack {
+                Circle()
+                    .fill(AppTheme.secondaryGradient)
+                    .frame(width: 100, height: 100)
+                    .shadow(color: AppTheme.shadowColor, radius: 10, x: 0, y: 5)
+
+                Image(systemName: "list.bullet.clipboard")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .foregroundStyle(.white)
+            }
 
             Text("No Active Quests")
                 .font(.title2)
@@ -100,8 +112,8 @@ struct QuestBoardView: View {
                 Label("Create Quest", systemImage: "plus.circle.fill")
                     .fontWeight(.semibold)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.pink)
+            .buttonStyle(GradientButtonStyle(gradient: AppTheme.primaryGradient))
+            .padding(.horizontal, 32)
         }
     }
 }
@@ -124,7 +136,7 @@ struct QuestRowView: View {
                     HStack(spacing: 8) {
                         Label("\(quest.points) pts", systemImage: "star.fill")
                             .font(.subheadline)
-                            .foregroundColor(.orange)
+                            .foregroundStyle(AppTheme.pointsGradient)
 
                         if let expireAt = quest.expireAt {
                             Label(
@@ -144,16 +156,23 @@ struct QuestRowView: View {
                         await viewModel.completeQuest(quest)
                     }
                 } label: {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.green)
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.successGradient)
+                            .frame(width: 44, height: 44)
+                            .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
+
+                        Image(systemName: "checkmark")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                    }
                 }
                 .disabled(viewModel.isLoading)
             }
         }
         .padding()
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
+        .cardStyle()
         .contextMenu {
             Button(role: .destructive) {
                 showDeleteConfirmation = true
@@ -186,54 +205,69 @@ struct CreateQuestView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Quest Details") {
-                    TextField("Quest title", text: $title)
-                        .focused($isTitleFocused)
+            ZStack {
+                // Background gradient
+                AppTheme.backgroundGradient
+                    .ignoresSafeArea()
 
-                    Stepper("Points: \(points)", value: $points, in: 1...100, step: 5)
-                }
+                Form {
+                    Section("Quest Details") {
+                        TextField("Quest title", text: $title)
+                            .focused($isTitleFocused)
 
-                Section {
-                    Button {
-                        Task {
-                            await viewModel.createQuest(title: title, points: points)
-                        }
-                    } label: {
-                        HStack {
-                            Spacer()
-                            if viewModel.isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                            } else {
-                                Text("Create Quest")
-                                    .fontWeight(.semibold)
-                            }
-                            Spacer()
-                        }
+                        Stepper("Points: \(points)", value: $points, in: 1...100, step: 5)
                     }
-                    .disabled(title.isEmpty || viewModel.isLoading)
-                    .listRowBackground(title.isEmpty ? Color.gray : Color.pink)
-                    .foregroundColor(.white)
+
+                    Section {
+                        Button {
+                            Task {
+                                await viewModel.createQuest(title: title, points: points)
+                            }
+                        } label: {
+                            HStack {
+                                Spacer()
+                                if viewModel.isLoading {
+                                    ProgressView()
+                                        .tint(.white)
+                                } else {
+                                    Text("Create Quest")
+                                        .fontWeight(.semibold)
+                                }
+                                Spacer()
+                            }
+                        }
+                        .disabled(title.isEmpty || viewModel.isLoading)
+                        .listRowBackground(
+                            Group {
+                                if title.isEmpty {
+                                    Color.gray
+                                } else {
+                                    AppTheme.primaryGradient
+                                }
+                            }
+                        )
+                        .foregroundColor(.white)
+                    }
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("New Quest")
             #if os(iOS)
-            .navigationBarTitleDisplayMode(.inline)
+                .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 #if os(iOS)
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
                     }
-                }
                 #else
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
                     }
-                }
                 #endif
             }
             .onAppear {

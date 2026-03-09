@@ -12,22 +12,28 @@ struct LoginView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    headerSection
+            ZStack {
+                // Background gradient
+                AppTheme.backgroundGradient
+                    .ignoresSafeArea()
 
-                    // Form
-                    formSection
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Header
+                        headerSection
 
-                    // Actions
-                    actionSection
+                        // Form
+                        formSection
 
-                    // Navigation
-                    navigationSection
+                        // Actions
+                        actionSection
+
+                        // Navigation
+                        navigationSection
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 32)
                 }
-                .padding(.horizontal, 24)
-                .padding(.vertical, 32)
             }
             .navigationTitle("Welcome Back")
             #if os(iOS)
@@ -48,14 +54,22 @@ struct LoginView: View {
 
     private var headerSection: some View {
         VStack(spacing: 12) {
-            Image(systemName: "heart.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 80, height: 80)
-                .foregroundStyle(.pink.gradient)
+            ZStack {
+                Circle()
+                    .fill(AppTheme.primaryGradient)
+                    .frame(width: 100, height: 100)
+                    .shadow(color: AppTheme.shadowColor, radius: 10, x: 0, y: 5)
+
+                Image(systemName: "heart.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .foregroundStyle(.white)
+            }
 
             Text("Couple Quest")
                 .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundStyle(AppTheme.primaryGradient)
 
             Text("Track chores, earn rewards together")
                 .font(.subheadline)
@@ -71,9 +85,13 @@ struct LoginView: View {
                 Text("Email")
                     .font(.subheadline)
                     .fontWeight(.medium)
+                    .foregroundColor(AppTheme.textSecondary)
 
                 TextField("your@email.com", text: $viewModel.email)
-                    .textFieldStyle(.roundedBorder)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(AppTheme.cornerRadiusMedium)
+                    .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.emailAddress)
                     #if os(iOS)
                         .textInputAutocapitalization(.never)
@@ -92,9 +110,13 @@ struct LoginView: View {
                 Text("Password")
                     .font(.subheadline)
                     .fontWeight(.medium)
+                    .foregroundColor(AppTheme.textSecondary)
 
                 SecureField("Enter your password", text: $viewModel.password)
-                    .textFieldStyle(.roundedBorder)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(AppTheme.cornerRadiusMedium)
+                    .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.password)
                     .focused($focusedField, equals: .password)
                     .submitLabel(.go)
@@ -124,12 +146,13 @@ struct LoginView: View {
                             .fontWeight(.semibold)
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(viewModel.canSignIn ? Color.pink : Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(12)
             }
+            .buttonStyle(
+                GradientButtonStyle(
+                    gradient: AppTheme.primaryGradient,
+                    isDisabled: !viewModel.canSignIn || viewModel.isLoading
+                )
+            )
             .disabled(!viewModel.canSignIn || viewModel.isLoading)
 
             // Forgot password
@@ -138,7 +161,7 @@ struct LoginView: View {
             } label: {
                 Text("Forgot Password?")
                     .font(.subheadline)
-                    .foregroundColor(.pink)
+                    .foregroundStyle(AppTheme.primaryGradient)
             }
         }
     }
@@ -157,7 +180,7 @@ struct LoginView: View {
                 } label: {
                     Text("Sign Up")
                         .fontWeight(.semibold)
-                        .foregroundColor(.pink)
+                        .foregroundStyle(AppTheme.primaryGradient)
                 }
             }
             .font(.subheadline)

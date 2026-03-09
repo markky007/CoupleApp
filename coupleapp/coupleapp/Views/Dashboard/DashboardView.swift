@@ -19,21 +19,27 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Welcome section
-                    welcomeSection
+            ZStack {
+                // Background gradient
+                AppTheme.backgroundGradient
+                    .ignoresSafeArea()
 
-                    // Points section (placeholder)
-                    pointsSection
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Welcome section
+                        welcomeSection
 
-                    // Quick actions (placeholder)
-                    quickActionsSection
+                        // Points section (placeholder)
+                        pointsSection
 
-                    // Upcoming events (placeholder)
-                    upcomingEventsSection
+                        // Quick actions (placeholder)
+                        quickActionsSection
+
+                        // Upcoming events (placeholder)
+                        upcomingEventsSection
+                    }
+                    .padding()
                 }
-                .padding()
             }
             .navigationTitle("Dashboard")
             .toolbar {
@@ -45,6 +51,7 @@ struct DashboardView: View {
                             }
                         } label: {
                             Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .foregroundStyle(AppTheme.primaryGradient)
                         }
                     }
                 #else
@@ -66,11 +73,18 @@ struct DashboardView: View {
 
     private var welcomeSection: some View {
         VStack(spacing: 8) {
-            Image(systemName: "heart.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 50, height: 50)
-                .foregroundStyle(.pink.gradient)
+            ZStack {
+                Circle()
+                    .fill(AppTheme.primaryGradient)
+                    .frame(width: 70, height: 70)
+                    .shadow(color: AppTheme.shadowColor, radius: 8, x: 0, y: 4)
+
+                Image(systemName: "heart.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 35, height: 35)
+                    .foregroundStyle(.white)
+            }
 
             Text("Welcome to Couple Quest!")
                 .font(.title2)
@@ -84,8 +98,7 @@ struct DashboardView: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(backgroundColor)
-        .cornerRadius(12)
+        .cardStyle()
     }
 
     private var pointsSection: some View {
@@ -103,12 +116,11 @@ struct DashboardView: View {
 
                     Text("0")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
-                        .foregroundColor(.pink)
+                        .foregroundStyle(AppTheme.pointsGradient)
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(backgroundColor)
-                .cornerRadius(12)
+                .cardStyle()
 
                 // Partner points
                 VStack(spacing: 8) {
@@ -118,12 +130,11 @@ struct DashboardView: View {
 
                     Text("0")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
-                        .foregroundColor(.purple)
+                        .foregroundStyle(AppTheme.partnerGradient)
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(backgroundColor)
-                .cornerRadius(12)
+                .cardStyle()
             }
         }
     }
@@ -179,12 +190,11 @@ struct DashboardView: View {
                 Button("Create Event") {
                     // TODO: Navigate to create event
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(GradientButtonStyle(gradient: AppTheme.secondaryGradient))
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(backgroundColor)
-            .cornerRadius(12)
+            .cardStyle()
         }
     }
 }
@@ -196,20 +206,17 @@ struct QuickActionButtonContent: View {
     let title: String
     let color: Color
 
-    // Helper for platform-specific background color
-    private var backgroundColor: Color {
-        #if os(iOS)
-            return Color(.systemGray6)
-        #else
-            return Color(NSColor.controlBackgroundColor)
-        #endif
-    }
-
     var body: some View {
         VStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 32))
-                .foregroundColor(color)
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.2))
+                    .frame(width: 50, height: 50)
+
+                Image(systemName: icon)
+                    .font(.system(size: 24))
+                    .foregroundColor(color)
+            }
 
             Text(title)
                 .font(.subheadline)
@@ -218,8 +225,7 @@ struct QuickActionButtonContent: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(backgroundColor)
-        .cornerRadius(12)
+        .cardStyle()
     }
 }
 
@@ -227,15 +233,6 @@ struct QuickActionButton: View {
     let icon: String
     let title: String
     let color: Color
-
-    // Helper for platform-specific background color
-    private var backgroundColor: Color {
-        #if os(iOS)
-            return Color(.systemGray6)
-        #else
-            return Color(NSColor.controlBackgroundColor)
-        #endif
-    }
 
     var body: some View {
         Button {

@@ -12,22 +12,28 @@ struct SignUpView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Header
-                headerSection
+        ZStack {
+            // Background gradient
+            AppTheme.backgroundGradient
+                .ignoresSafeArea()
 
-                // Form
-                formSection
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header
+                    headerSection
 
-                // Password requirements
-                passwordRequirementsSection
+                    // Form
+                    formSection
 
-                // Actions
-                actionSection
+                    // Password requirements
+                    passwordRequirementsSection
+
+                    // Actions
+                    actionSection
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 32)
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 32)
         }
         .navigationTitle("Create Account")
         #if os(iOS)
@@ -55,15 +61,23 @@ struct SignUpView: View {
 
     private var headerSection: some View {
         VStack(spacing: 12) {
-            Image(systemName: "person.2.fill")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 60, height: 60)
-                .foregroundStyle(.pink.gradient)
+            ZStack {
+                Circle()
+                    .fill(AppTheme.secondaryGradient)
+                    .frame(width: 90, height: 90)
+                    .shadow(color: AppTheme.shadowColor, radius: 10, x: 0, y: 5)
+
+                Image(systemName: "person.2.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 45, height: 45)
+                    .foregroundStyle(.white)
+            }
 
             Text("Join Couple Quest")
                 .font(.title2)
                 .fontWeight(.bold)
+                .foregroundStyle(AppTheme.primaryGradient)
 
             Text("Start tracking chores and earning rewards")
                 .font(.subheadline)
@@ -82,7 +96,10 @@ struct SignUpView: View {
                     .fontWeight(.medium)
 
                 TextField("your@email.com", text: $viewModel.email)
-                    .textFieldStyle(.roundedBorder)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(AppTheme.cornerRadiusMedium)
+                    .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.emailAddress)
                     #if os(iOS)
                         .textInputAutocapitalization(.never)
@@ -109,7 +126,10 @@ struct SignUpView: View {
                     .fontWeight(.medium)
 
                 SecureField("Create a password", text: $viewModel.password)
-                    .textFieldStyle(.roundedBorder)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(AppTheme.cornerRadiusMedium)
+                    .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.newPassword)
                     .focused($focusedField, equals: .password)
                     .submitLabel(.next)
@@ -125,7 +145,10 @@ struct SignUpView: View {
                     .fontWeight(.medium)
 
                 SecureField("Confirm your password", text: $viewModel.confirmPassword)
-                    .textFieldStyle(.roundedBorder)
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(AppTheme.cornerRadiusMedium)
+                    .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.newPassword)
                     .focused($focusedField, equals: .confirmPassword)
                     .submitLabel(.go)
@@ -187,12 +210,11 @@ struct SignUpView: View {
                             .fontWeight(.semibold)
                     }
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(viewModel.canSignUp ? Color.pink : Color.gray)
-                .foregroundColor(.white)
-                .cornerRadius(12)
             }
+            .buttonStyle(GradientButtonStyle(
+                gradient: AppTheme.primaryGradient,
+                isDisabled: !viewModel.canSignUp || viewModel.isLoading
+            ))
             .disabled(!viewModel.canSignUp || viewModel.isLoading)
 
             // Terms and privacy
