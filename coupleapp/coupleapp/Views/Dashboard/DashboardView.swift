@@ -164,6 +164,8 @@ struct DashboardView: View {
                 }
                 .buttonStyle(.plain)
 
+                // TODO: Events feature - temporarily disabled due to date encoding issues
+                // Will be fixed in future update
                 QuickActionButton(
                     icon: "calendar",
                     title: "Events",
@@ -189,14 +191,9 @@ struct DashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 12) {
-                Text("No upcoming events")
+                Text("Events feature coming soon")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-
-                Button("Create Event") {
-                    // TODO: Navigate to create event
-                }
-                .buttonStyle(GradientButtonStyle(gradient: AppTheme.secondaryGradient))
             }
             .frame(maxWidth: .infinity)
             .padding()

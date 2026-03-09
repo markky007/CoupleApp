@@ -242,7 +242,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 5. Phase 5: Events & Notifications
-  - [ ] 5.1 Create Event model and EventService
+  - [x] 5.1 Create Event model and EventService
     - Create Event.swift model with Codable conformance
     - Create EventService.swift with event operations
     - Implement fetchUpcomingEvents() async throws method
@@ -252,7 +252,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Implement calculateDaysUntil(event:) -> Int method
     - _Requirements: Event management, countdown calculations_
 
-  - [ ] 5.2 Implement NotificationService
+  - [x] 5.2 Implement NotificationService
     - Create NotificationService.swift with notification operations
     - Implement requestAuthorization() async throws -> Bool method
     - Implement scheduleEventReminder(event:daysBeforeArray:) async throws method
@@ -261,7 +261,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Implement getPendingNotifications() async -> [UNNotificationRequest] method
     - _Requirements: Local notifications, event reminders_
 
-  - [ ] 5.3 Create event management UI
+  - [x] 5.3 Create event management UI
     - Create EventListView with upcoming events sorted by date
     - Create EventRowView showing title, date, and days until
     - Create EventViewModel with @Published events array
@@ -270,7 +270,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Display countdown for each event
     - _Requirements: Event UI, event creation interface_
 
-  - [ ] 5.4 Integrate notifications with event lifecycle
+  - [x] 5.4 Integrate notifications with event lifecycle
     - Request notification permission on first event creation
     - Schedule notifications (3 days and 1 day before) when event created
     - Cancel notifications when event deleted
@@ -278,7 +278,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Handle notification permission denial gracefully
     - _Requirements: Notification integration, event lifecycle_
 
-  - [ ] 5.5 Set up RLS policies for events
+  - [x] 5.5 Set up RLS policies for events
     - Create RLS policy: Users can view events created by themselves or partner
     - Create RLS policy: Users can create, update, delete their own events
     - Test RLS policies with different user scenarios
@@ -301,7 +301,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Test notification cancellation removes pending notifications
     - _Requirements: Event and notification service correctness_
 
-  - [ ] 5.8 Checkpoint - Verify event and notification functionality
+  - [x] 5.8 Checkpoint - Verify event and notification functionality
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. Phase 6: Dashboard & Polish
