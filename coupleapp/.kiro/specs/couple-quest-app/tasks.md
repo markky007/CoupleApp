@@ -32,7 +32,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Create main navigation structure (ContentView) with authenticated/unauthenticated routing
     - _Requirements: User interface, authentication flow_
 
-  - [ ]* 1.4 Write unit tests for AuthService
+  - [ ]\* 1.4 Write unit tests for AuthService
     - Test successful sign up with valid credentials
     - Test sign in with correct credentials
     - Test sign in failure with incorrect credentials
@@ -44,7 +44,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 2. Phase 2: Profile & Partner Pairing
-  - [ ] 2.1 Create Profile model and ProfileService
+  - [x] 2.1 Create Profile model and ProfileService
     - Create Profile.swift model with Codable conformance
     - Create ProfileService.swift with CRUD operations
     - Implement fetchProfile(userId:) async throws method
@@ -54,14 +54,14 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Implement updatePoints(userId:delta:) async throws method
     - _Requirements: Profile management, data models_
 
-  - [ ] 2.2 Set up database RLS policies in Supabase
+  - [x] 2.2 Set up database RLS policies in Supabase
     - Create RLS policy: Users can view own and partner profile
     - Create RLS policy: Users can update own profile only
     - Create RLS policy: Prevent unauthorized profile access
     - Test RLS policies with different user scenarios
     - _Requirements: Data security, access control_
 
-  - [ ] 2.3 Implement profile views and partner pairing UI
+  - [x] 2.3 Implement profile views and partner pairing UI
     - Create ProfileView to display user profile and partner info
     - Create ProfileViewModel with profile state management
     - Add display name editing functionality
@@ -70,13 +70,13 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Add error handling for pairing failures
     - _Requirements: Profile UI, partner pairing interface_
 
-  - [ ]* 2.4 Write property test for bidirectional partner relationship
+  - [ ]\* 2.4 Write property test for bidirectional partner relationship
     - **Property 2: Bidirectional Partner Relationship**
     - **Validates: Partner relationships are always bidirectional**
     - Test that if user A pairs with user B, then B.partnerId == A.id and A.partnerId == B.id
     - _Requirements: Partner pairing correctness_
 
-  - [ ]* 2.5 Write unit tests for ProfileService
+  - [ ]\* 2.5 Write unit tests for ProfileService
     - Test profile creation with valid data
     - Test profile fetch returns correct data
     - Test partner pairing creates bidirectional relationship
@@ -85,7 +85,7 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Test point update fails when result would be negative
     - _Requirements: Profile service correctness_
 
-  - [ ] 2.6 Checkpoint - Verify profile and pairing functionality
+  - [x] 2.6 Checkpoint - Verify profile and pairing functionality
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 3. Phase 3: Quest System
@@ -131,19 +131,19 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Test RLS policies with different user scenarios
     - _Requirements: Quest security, access control_
 
-  - [ ]* 3.6 Write property test for quest completion idempotency
+  - [ ]\* 3.6 Write property test for quest completion idempotency
     - **Property 3: Quest Completion Idempotency**
     - **Validates: Completed quests cannot be completed again**
     - Test that completing a quest multiple times only awards points once
     - _Requirements: Quest completion correctness_
 
-  - [ ]* 3.7 Write property test for active quest filtering
+  - [ ]\* 3.7 Write property test for active quest filtering
     - **Property 9: Active Quest Filtering**
     - **Validates: Active quests have pending status and valid expiration**
     - Test that fetchActiveQuests only returns pending, non-expired quests
     - _Requirements: Quest filtering correctness_
 
-  - [ ]* 3.8 Write unit tests for QuestService
+  - [ ]\* 3.8 Write unit tests for QuestService
     - Test quest creation with valid parameters
     - Test fetch active quests excludes completed and expired
     - Test quest completion updates status and awards points
@@ -211,25 +211,25 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Test RLS policies with different user scenarios
     - _Requirements: Reward and transaction security_
 
-  - [ ]* 4.8 Write property test for point balance non-negativity
+  - [ ]\* 4.8 Write property test for point balance non-negativity
     - **Property 1: Point Balance Integrity**
     - **Validates: User point balances never go negative**
     - Test that all point-modifying operations maintain non-negative balance
     - _Requirements: Point system integrity_
 
-  - [ ]* 4.9 Write property test for sufficient balance for redemption
+  - [ ]\* 4.9 Write property test for sufficient balance for redemption
     - **Property 8: Sufficient Balance for Redemption**
     - **Validates: Redemptions only succeed with sufficient points**
     - Test that redemption fails when user.totalPoints < reward.pointsCost
     - _Requirements: Redemption validation_
 
-  - [ ]* 4.10 Write property test for atomic reward redemption
+  - [ ]\* 4.10 Write property test for atomic reward redemption
     - **Property 7: Atomic Reward Redemption**
     - **Validates: Redemption is atomic (points deducted and transaction created together)**
     - Test that failed redemptions leave no partial state
     - _Requirements: Redemption atomicity_
 
-  - [ ]* 4.11 Write unit tests for RewardService and TransactionService
+  - [ ]\* 4.11 Write unit tests for RewardService and TransactionService
     - Test reward redemption with sufficient balance
     - Test redemption fails with insufficient balance
     - Test redemption deducts correct point amount
@@ -284,13 +284,13 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Test RLS policies with different user scenarios
     - _Requirements: Event security, access control_
 
-  - [ ]* 5.6 Write property test for notification scheduling validity
+  - [ ]\* 5.6 Write property test for notification scheduling validity
     - **Property 11: Notification Scheduling Validity**
     - **Validates: Scheduled notifications have future trigger dates before event date**
     - Test that all scheduled notifications meet date constraints
     - _Requirements: Notification scheduling correctness_
 
-  - [ ]* 5.7 Write unit tests for EventService and NotificationService
+  - [ ]\* 5.7 Write unit tests for EventService and NotificationService
     - Test event creation with valid date
     - Test calculateDaysUntil returns correct value for future events
     - Test calculateDaysUntil returns 0 for today
@@ -351,37 +351,37 @@ This implementation plan breaks down the Couple Quest iOS application into 8 seq
     - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. Phase 7: Testing & Optimization
-  - [ ]* 7.1 Write property test for transaction immutability
+  - [ ]\* 7.1 Write property test for transaction immutability
     - **Property 4: Transaction Immutability**
     - **Validates: Transaction records are never modified after creation**
     - Test that transactions cannot be updated or deleted
     - _Requirements: Transaction audit trail integrity_
 
-  - [ ]* 7.2 Write property test for point change traceability
+  - [ ]\* 7.2 Write property test for point change traceability
     - **Property 5: Point Change Traceability**
     - **Validates: Every point change has corresponding transaction**
     - Test that sum of transactions equals current balance
     - _Requirements: Point system audit trail_
 
-  - [ ]* 7.3 Write property test for atomic quest completion
+  - [ ]\* 7.3 Write property test for atomic quest completion
     - **Property 6: Atomic Quest Completion**
     - **Validates: Quest completion is atomic (all or nothing)**
     - Test that failed completions leave no partial state
     - _Requirements: Quest completion atomicity_
 
-  - [ ]* 7.4 Write property test for realtime consistency
+  - [ ]\* 7.4 Write property test for realtime consistency
     - **Property 10: Realtime Consistency**
     - **Validates: Data changes propagate to subscribed clients within 100ms**
     - Test realtime update delivery time
     - _Requirements: Real-time synchronization performance_
 
-  - [ ]* 7.5 Write property test for transaction amount consistency
+  - [ ]\* 7.5 Write property test for transaction amount consistency
     - **Property 13: Transaction Amount Consistency**
     - **Validates: Earn transactions positive, redeem transactions negative**
     - Test transaction amount signs match transaction types
     - _Requirements: Transaction data integrity_
 
-  - [ ]* 7.6 Write integration tests for end-to-end flows
+  - [ ]\* 7.6 Write integration tests for end-to-end flows
     - Test complete authentication flow
     - Test complete quest workflow (create → complete → verify points)
     - Test reward redemption flow
