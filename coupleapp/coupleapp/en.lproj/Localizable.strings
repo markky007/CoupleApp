@@ -1,0 +1,240 @@
+/* 
+ * Localizable.strings (English)
+ * Couple Quest App - Additional Features Enhancement
+ * 
+ * This file contains all English translations for the app.
+ * Keys are organized by feature using dot notation.
+ */
+
+// MARK: - Pairing System (10 keys)
+
+/* Partner pairing code label */
+"pairing.code" = "Partner Code";
+
+/* Partner pairing code description */
+"pairing.code.description" = "Share this code with your partner";
+
+/* Enter partner code placeholder */
+"pairing.code.enter" = "Enter Partner Code";
+
+/* Send pairing request button */
+"pairing.request.send" = "Send Pairing Request";
+
+/* Accept pairing request button */
+"pairing.request.accept" = "Accept";
+
+/* Reject pairing request button */
+"pairing.request.reject" = "Reject";
+
+/* Pairing status - paired */
+"pairing.status.paired" = "Paired";
+
+/* Pairing status - unpaired */
+"pairing.status.unpaired" = "Unpaired";
+
+/* Unpair button */
+"pairing.unpair" = "Unpair";
+
+/* Pairing request notification */
+"pairing.request.notification" = "%@ wants to pair with you";
+
+/* Pairing view title */
+"pairing.title" = "Partner Pairing";
+
+/* Your partner code section */
+"pairing.your_code" = "Your Partner Code";
+
+/* Copy code button */
+"pairing.copy_code" = "Copy Code";
+
+/* Enter code section */
+"pairing.enter_code" = "Enter Partner Code";
+
+/* Code placeholder */
+"pairing.code.placeholder" = "Enter 6-8 character code";
+
+/* Send request button */
+"pairing.send_request" = "Send Request";
+
+/* Pending requests section */
+"pairing.pending_requests" = "Pending Requests";
+
+/* No requests message */
+"pairing.no_requests" = "No pending pairing requests";
+
+/* Unknown user */
+"pairing.unknown_user" = "Unknown User";
+
+/* Wants to pair message */
+"pairing.wants_to_pair" = "wants to pair with you";
+
+/* Accept button */
+"pairing.accept" = "Accept";
+
+/* Reject button */
+"pairing.reject" = "Reject";
+
+/* Paired partner section */
+"pairing.paired_partner" = "Paired Partner";
+
+/* No partner message */
+"pairing.no_partner" = "No partner yet";
+
+/* No partner hint */
+"pairing.no_partner.hint" = "Share your code or enter a partner code to connect";
+
+/* Unpair confirmation title */
+"pairing.unpair.confirm.title" = "Unpair Partner";
+
+/* Unpair confirmation message */
+"pairing.unpair.confirm.message" = "Are you sure you want to unpair? This will disconnect both of you.";
+
+/* Unpair button */
+"pairing.unpair.button" = "Unpair";
+
+/* Code loading message */
+"pairing.code.loading" = "Loading code...";
+
+/* Error title */
+"error.title" = "Error";
+
+/* Success title */
+"success.title" = "Success";
+
+/* OK button */
+"button.ok" = "OK";
+
+/* Cancel button */
+"button.cancel" = "Cancel";
+
+
+// MARK: - Profile Management (8 keys)
+
+/* Edit profile button */
+"profile.edit" = "Edit Profile";
+
+/* Username label */
+"profile.username" = "Display Name";
+
+/* Username placeholder */
+"profile.username.placeholder" = "Enter your display name";
+
+/* Save profile button */
+"profile.save" = "Save";
+
+/* Profile picture label */
+"profile.picture" = "Profile Picture";
+
+/* Upload picture button */
+"profile.picture.upload" = "Upload Picture";
+
+/* No partner message */
+"profile.no_partner" = "No partner";
+
+/* Total points label */
+"profile.total_points" = "Total Points";
+
+
+// MARK: - Theme System (5 keys)
+
+/* Light theme option */
+"theme.light" = "Light";
+
+/* Dark theme option */
+"theme.dark" = "Dark";
+
+/* System theme option */
+"theme.system" = "System";
+
+/* Theme setting label */
+"theme.label" = "Theme";
+
+/* Theme description */
+"theme.description" = "Choose your preferred theme";
+
+
+// MARK: - Settings (6 keys)
+
+/* Settings screen title */
+"settings.title" = "Settings";
+
+/* Language setting label */
+"settings.language" = "Language";
+
+/* App version label */
+"settings.version" = "App Version";
+
+/* Logout button */
+"settings.logout" = "Logout";
+
+/* Logout confirmation message */
+"settings.logout.confirm" = "Are you sure you want to logout?";
+
+/* Cancel button */
+"settings.cancel" = "Cancel";
+
+
+// MARK: - Error Messages (15 keys)
+
+/* Invalid partner code error */
+"error.pairing.invalid_code" = "Invalid partner code format";
+
+/* Partner code not found error */
+"error.pairing.code_not_found" = "Partner code not found";
+
+/* Cannot pair with self error */
+"error.pairing.cannot_pair_self" = "You cannot pair with yourself";
+
+/* Already paired error */
+"error.pairing.already_paired" = "You are already paired with someone";
+
+/* Recipient already paired error */
+"error.pairing.recipient_paired" = "This user is already paired with someone";
+
+/* Pairing request already exists error */
+"error.pairing.request_exists" = "A pairing request already exists";
+
+/* Pairing request not found error */
+"error.pairing.request_not_found" = "Pairing request not found";
+
+/* Pairing request not pending error */
+"error.pairing.request_not_pending" = "This pairing request is no longer pending";
+
+/* Invalid username error */
+"error.profile.invalid_username" = "Username must be 1-50 characters and contain only letters, numbers, spaces, hyphens, and underscores";
+
+/* Username taken error */
+"error.profile.username_taken" = "This username is already taken";
+
+/* Invalid image data error */
+"error.profile.invalid_image" = "Invalid image format. Please use JPEG or PNG";
+
+/* Image resize failed error */
+"error.profile.resize_failed" = "Failed to resize image";
+
+/* Image too large error */
+"error.profile.image_too_large" = "Image is too large. Maximum size is 5MB";
+
+/* Upload failed error */
+"error.profile.upload_failed" = "Upload failed: %@";
+
+/* Network error */
+"error.network" = "Network error: %@";
+
+
+// MARK: - Common UI Elements
+
+/* OK button */
+"common.ok" = "OK";
+
+/* Done button */
+"common.done" = "Done";
+
+/* Loading message */
+"common.loading" = "Loading...";
+
+/* Success message */
+"common.success" = "Success";
+
+/* Error title */
+"common.error" = "Error";

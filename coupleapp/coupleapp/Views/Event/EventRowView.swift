@@ -7,6 +7,8 @@ struct EventRowView: View {
 
     let event: Event
     let countdownText: String
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     // MARK: - Body
 
@@ -53,7 +55,10 @@ struct EventRowView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium)
-                .fill(AppTheme.cardGradient)
+                .fill(
+                    AppTheme.cardGradient(
+                        for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
+                )
                 .shadow(
                     color: AppTheme.shadowColor,
                     radius: AppTheme.shadowRadius,

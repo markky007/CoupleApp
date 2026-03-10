@@ -5,13 +5,17 @@ import SwiftUI
 struct TransactionHistoryView: View {
 
     @StateObject private var viewModel = TransactionViewModel()
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+                // Background gradient (adaptive to theme)
+                AppTheme.backgroundGradient(
+                    for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+                )
+                .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.transactions.isEmpty {
                     ProgressView("Loading transactions...")

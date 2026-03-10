@@ -5,12 +5,16 @@ import SwiftUI
 struct ApprovalQueueView: View {
 
     @ObservedObject var viewModel: RewardViewModel
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
         ZStack {
-            // Background gradient
-            AppTheme.backgroundGradient
-                .ignoresSafeArea()
+            // Background gradient (adaptive to theme)
+            AppTheme.backgroundGradient(
+                for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+            )
+            .ignoresSafeArea()
 
             if viewModel.isLoading && viewModel.pendingApprovals.isEmpty {
                 ProgressView("Loading approvals...")
@@ -21,7 +25,9 @@ struct ApprovalQueueView: View {
             }
         }
         .navigationTitle("Pending Approvals")
-        .navigationBarTitleDisplayMode(.inline)
+        #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+        #endif
         .refreshable {
             await viewModel.loadPendingApprovals()
         }

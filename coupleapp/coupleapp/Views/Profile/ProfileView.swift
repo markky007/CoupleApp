@@ -42,22 +42,34 @@ struct ProfileView: View {
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            Task {
-                                await viewModel.loadProfile()
+                        HStack(spacing: 12) {
+                            NavigationLink(destination: SettingsView()) {
+                                Image(systemName: "gear")
                             }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
+
+                            Button {
+                                Task {
+                                    await viewModel.loadProfile()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
                         }
                     }
                 #else
                     ToolbarItem(placement: .automatic) {
-                        Button {
-                            Task {
-                                await viewModel.loadProfile()
+                        HStack(spacing: 12) {
+                            NavigationLink(destination: SettingsView()) {
+                                Image(systemName: "gear")
                             }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
+
+                            Button {
+                                Task {
+                                    await viewModel.loadProfile()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
                         }
                     }
                 #endif
@@ -87,7 +99,7 @@ struct ProfileView: View {
                 Text(viewModel.successMessage ?? "Success")
             }
             .sheet(isPresented: $showPairingSheet) {
-                PairingView(viewModel: viewModel)
+                PartnerPairingView(viewModel: viewModel)
             }
             .sheet(isPresented: $showEditNameSheet) {
                 EditNameView(viewModel: viewModel)
@@ -309,9 +321,9 @@ struct ProfileView: View {
     }
 }
 
-// MARK: - Pairing View
+// MARK: - Partner Pairing View
 
-struct PairingView: View {
+struct PartnerPairingView: View {
     @ObservedObject var viewModel: ProfileViewModel
     @Environment(\.dismiss) private var dismiss
 

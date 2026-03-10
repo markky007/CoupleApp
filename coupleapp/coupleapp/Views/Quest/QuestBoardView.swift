@@ -7,13 +7,17 @@ struct QuestBoardView: View {
     @StateObject private var viewModel = QuestViewModel()
     @StateObject private var onboardingManager = OnboardingManager.shared
     @State private var showTooltip = false
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+                // Background gradient (adaptive to theme)
+                AppTheme.backgroundGradient(
+                    for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+                )
+                .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.quests.isEmpty {
                     QuestBoardSkeletonView()
@@ -319,6 +323,8 @@ struct QuestRowView: View {
 struct CreateQuestView: View {
     @ObservedObject var viewModel: QuestViewModel
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     @State private var title = ""
     @State private var points = 10
@@ -327,9 +333,11 @@ struct CreateQuestView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+                // Background gradient (adaptive to theme)
+                AppTheme.backgroundGradient(
+                    for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+                )
+                .ignoresSafeArea()
 
                 Form {
                     Section("Quest Details") {
@@ -395,28 +403,6 @@ struct CreateQuestView: View {
             .onAppear {
                 isTitleFocused = true
             }
-        }
-    }
-}
-
-// MARK: - Tip Row Component
-
-struct TipRow: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.caption)
-                .foregroundStyle(AppTheme.primaryGradient)
-                .frame(width: 20)
-
-            Text(text)
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            Spacer()
         }
     }
 }

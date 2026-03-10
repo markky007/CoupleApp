@@ -77,7 +77,7 @@ struct ErrorAlertView: View {
             }
         }
         .padding(24)
-        .background(Color(.systemBackground))
+        .background(AppTheme.primaryBackground)
         .cornerRadius(AppTheme.cornerRadiusLarge)
         .shadow(color: AppTheme.shadowColor, radius: 20, x: 0, y: 10)
         .padding(.horizontal, 32)

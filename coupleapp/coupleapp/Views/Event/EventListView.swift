@@ -11,15 +11,19 @@ struct EventListView: View {
     @State private var selectedEvent: Event?
     @State private var showEditSheet = false
     @State private var showTooltip = false
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     // MARK: - Body
 
     var body: some View {
         NavigationView {
             ZStack {
-                // Background gradient
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+                // Background gradient (adaptive to theme)
+                AppTheme.backgroundGradient(
+                    for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+                )
+                .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     if viewModel.isLoading && viewModel.events.isEmpty {
@@ -66,15 +70,27 @@ struct EventListView: View {
             }
             .navigationTitle("Events")
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showCreateSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(AppTheme.primaryGradient)
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            showCreateSheet = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(AppTheme.primaryGradient)
+                        }
                     }
-                }
+                #else
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showCreateSheet = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(AppTheme.primaryGradient)
+                        }
+                    }
+                #endif
             }
             .sheet(isPresented: $showCreateSheet) {
                 CreateEventView(viewModel: viewModel)
@@ -238,13 +254,23 @@ struct CreateEventView: View {
                 }
             }
             .navigationTitle("New Event")
-            .navigationBarTitleDisplayMode(.inline)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
                     }
-                }
+                #else
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                    }
+                #endif
             }
         }
     }
@@ -311,13 +337,23 @@ struct EditEventView: View {
                 }
             }
             .navigationTitle("Edit Event")
-            .navigationBarTitleDisplayMode(.inline)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
                     }
-                }
+                #else
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                    }
+                #endif
             }
         }
     }

@@ -2,6 +2,10 @@ import Combine
 import Foundation
 import Supabase
 
+#if os(iOS)
+    import UIKit
+#endif
+
 // MARK: - Helper Structs
 
 /// Parameters for RPC point update function
@@ -242,6 +246,279 @@ class ProfileService {
         }
     }
 
+    // MARK: - Partner Code Management
+
+    /// Updates a user's partner code
+    /// - Parameters:
+    ///   - userId: User's unique identifier
+    ///   - code: Partner code to set (6-8 characters, alphanumeric)
+    /// - Throws: ProfileError if update fails or code is invalid
+    func updatePartnerCode(userId: UUID, code: String) async throws {
+        // Validate partner code format
+        guard Profile.isValidPartnerCode(code) else {
+            throw ProfileError.invalidPartnerCode
+        }
+
+        let normalizedCode = code.trimmingCharacters(in: .whitespaces).uppercased()
+
+        do {
+            try await client
+                .from("profiles")
+                .update([
+                    "partner_code": normalizedCode,
+                    "updated_at": Date().ISO8601Format(),
+                ])
+                .eq("id", value: userId)
+                .execute()
+
+            print("✅ Partner code updated for user: \(userId)")
+        } catch {
+            print("❌ Failed to update partner code: \(error.localizedDescription)")
+            throw ProfileError.updateFailed(error.localizedDescription)
+        }
+    }
+
+    /// Fetches a profile by partner code
+    /// - Parameter code: Partner code to search for
+    /// - Returns: Profile with matching partner code, or nil if not found
+    /// - Throws: ProfileError if fetch fails
+    func fetchProfileByPartnerCode(_ code: String) async throws -> Profile? {
+        let normalizedCode = code.trimmingCharacters(in: .whitespaces).uppercased()
+
+        do {
+            let profiles: [Profile] =
+                try await client
+                .from("profiles")
+                .select()
+                .eq("partner_code", value: normalizedCode)
+                .execute()
+                .value
+
+            if profiles.isEmpty {
+                return nil
+            }
+
+            print("✅ Profile found for partner code: \(normalizedCode)")
+            return profiles.first
+        } catch {
+            print("❌ Failed to fetch profile by partner code: \(error.localizedDescription)")
+            throw ProfileError.fetchFailed(error.localizedDescription)
+        }
+    }
+
+    // MARK: - Profile Picture Management
+
+    /// Uploads a profile picture for a user
+    /// - Parameters:
+    ///   - userId: User's unique identifier
+    ///   - imageData: Image data to upload (will be resized to 512x512 max)
+    /// - Returns: Public URL of the uploaded image
+    /// - Throws: ProfileError if upload fails
+    func uploadProfilePicture(userId: UUID, imageData: Data) async throws -> String {
+        #if os(iOS)
+            // Validate image data
+            guard let image = UIImage(data: imageData) else {
+                throw ProfileError.invalidImageData
+            }
+
+            // Resize image to max 512x512
+            guard let resizedData = ProfilePictureHelper.resizeImage(image, maxSize: 512) else {
+                throw ProfileError.imageResizeFailed
+            }
+        #else
+            // On macOS, use imageData directly without resizing
+            let resizedData = imageData
+        #endif
+
+        // Generate unique filename
+        let fileName = "\(UUID().uuidString).jpg"
+        let storagePath = "\(userId.uuidString)/\(fileName)"
+
+        do {
+            // Delete old profile picture if exists
+            let profile = try await fetchProfile(userId: userId)
+            if let oldUrl = profile.profilePictureUrl {
+                // Extract path from URL and delete
+                #if os(iOS)
+                    if let oldPath = ProfilePictureHelper.extractStoragePath(from: oldUrl) {
+                        try? await client.storage
+                            .from("profile-pictures")
+                            .remove(paths: [oldPath])
+                    }
+                #endif
+            }
+
+            // Upload to Supabase Storage
+            _ = try await client.storage
+                .from("profile-pictures")
+                .upload(
+                    path: storagePath,
+                    file: resizedData,
+                    options: FileOptions(contentType: "image/jpeg")
+                )
+
+            // Get public URL
+            let publicURL = try client.storage
+                .from("profile-pictures")
+                .getPublicURL(path: storagePath)
+
+            // Update profile with new URL
+            try await client
+                .from("profiles")
+                .update([
+                    "profile_picture_url": publicURL.absoluteString,
+                    "updated_at": Date().ISO8601Format(),
+                ])
+                .eq("id", value: userId)
+                .execute()
+
+            print("✅ Profile picture uploaded for user: \(userId)")
+            return publicURL.absoluteString
+        } catch let error as ProfileError {
+            throw error
+        } catch {
+            print("❌ Failed to upload profile picture: \(error.localizedDescription)")
+            throw ProfileError.uploadFailed(error.localizedDescription)
+        }
+    }
+
+    /// Deletes a user's profile picture
+    /// - Parameter userId: User's unique identifier
+    /// - Throws: ProfileError if deletion fails
+    func deleteProfilePicture(userId: UUID) async throws {
+        do {
+            let profile = try await fetchProfile(userId: userId)
+
+            guard let pictureUrl = profile.profilePictureUrl else {
+                // No picture to delete
+                return
+            }
+
+            // Extract path from URL and delete from storage
+            #if os(iOS)
+                if let storagePath = ProfilePictureHelper.extractStoragePath(from: pictureUrl) {
+                    try await client.storage
+                        .from("profile-pictures")
+                        .remove(paths: [storagePath])
+                }
+            #endif
+
+            // Clear profile_picture_url in database
+            try await client
+                .from("profiles")
+                .update([
+                    "profile_picture_url": nil as String?,
+                    "updated_at": Date().ISO8601Format(),
+                ])
+                .eq("id", value: userId)
+                .execute()
+
+            print("✅ Profile picture deleted for user: \(userId)")
+        } catch let error as ProfileError {
+            throw error
+        } catch {
+            print("❌ Failed to delete profile picture: \(error.localizedDescription)")
+            throw ProfileError.deleteFailed(error.localizedDescription)
+        }
+    }
+
+    // MARK: - Username Management
+
+    /// Updates a user's username
+    /// - Parameters:
+    ///   - userId: User's unique identifier
+    ///   - username: New username (1-50 characters, alphanumeric + spaces/hyphens/underscores)
+    /// - Throws: ProfileError if update fails or username is invalid
+    func updateUsername(userId: UUID, username: String) async throws {
+        // Validate username
+        guard validateUsername(username) else {
+            throw ProfileError.invalidUsername
+        }
+
+        let trimmedUsername = username.trimmingCharacters(in: .whitespaces)
+
+        do {
+            try await client
+                .from("profiles")
+                .update([
+                    "username": trimmedUsername,
+                    "updated_at": Date().ISO8601Format(),
+                ])
+                .eq("id", value: userId)
+                .execute()
+
+            print("✅ Username updated for user: \(userId)")
+        } catch {
+            print("❌ Failed to update username: \(error.localizedDescription)")
+            throw ProfileError.updateFailed(error.localizedDescription)
+        }
+    }
+
+    /// Validates a username
+    /// - Parameter username: Username to validate
+    /// - Returns: True if valid, false otherwise
+    func validateUsername(_ username: String) -> Bool {
+        return Profile.isValidUsername(username)
+    }
+
+    // MARK: - Preference Management
+
+    /// Updates a user's theme preference
+    /// - Parameters:
+    ///   - userId: User's unique identifier
+    ///   - theme: Theme preference ("light", "dark", or "system")
+    /// - Throws: ProfileError if update fails
+    func updateThemePreference(userId: UUID, theme: String) async throws {
+        // Validate theme value
+        guard ["light", "dark", "system"].contains(theme) else {
+            throw ProfileError.invalidThemePreference
+        }
+
+        do {
+            try await client
+                .from("profiles")
+                .update([
+                    "theme_preference": theme,
+                    "updated_at": Date().ISO8601Format(),
+                ])
+                .eq("id", value: userId)
+                .execute()
+
+            print("✅ Theme preference updated for user: \(userId)")
+        } catch {
+            print("❌ Failed to update theme preference: \(error.localizedDescription)")
+            throw ProfileError.updateFailed(error.localizedDescription)
+        }
+    }
+
+    /// Updates a user's language preference
+    /// - Parameters:
+    ///   - userId: User's unique identifier
+    ///   - language: Language preference ("en" or "th")
+    /// - Throws: ProfileError if update fails
+    func updateLanguagePreference(userId: UUID, language: String) async throws {
+        // Validate language value
+        guard ["en", "th"].contains(language) else {
+            throw ProfileError.invalidLanguagePreference
+        }
+
+        do {
+            try await client
+                .from("profiles")
+                .update([
+                    "language_preference": language,
+                    "updated_at": Date().ISO8601Format(),
+                ])
+                .eq("id", value: userId)
+                .execute()
+
+            print("✅ Language preference updated for user: \(userId)")
+        } catch {
+            print("❌ Failed to update language preference: \(error.localizedDescription)")
+            throw ProfileError.updateFailed(error.localizedDescription)
+        }
+    }
+
     // MARK: - Realtime Subscriptions
 
     /// Subscribes to profile changes for real-time updates
@@ -316,6 +593,14 @@ enum ProfileError: LocalizedError {
     case pointUpdateFailed(String)
     case subscriptionFailed(String)
     case profileNotFound
+    case invalidPartnerCode
+    case invalidImageData
+    case imageResizeFailed
+    case uploadFailed(String)
+    case deleteFailed(String)
+    case invalidUsername
+    case invalidThemePreference
+    case invalidLanguagePreference
 
     var errorDescription: String? {
         switch self {
@@ -345,6 +630,72 @@ enum ProfileError: LocalizedError {
             return "Failed to subscribe to updates: \(message)"
         case .profileNotFound:
             return "Profile not found"
+        case .invalidPartnerCode:
+            return "Partner code must be 6-8 alphanumeric characters"
+        case .invalidImageData:
+            return "Invalid image data"
+        case .imageResizeFailed:
+            return "Failed to resize image"
+        case .uploadFailed(let message):
+            return "Failed to upload profile picture: \(message)"
+        case .deleteFailed(let message):
+            return "Failed to delete profile picture: \(message)"
+        case .invalidUsername:
+            return
+                "Username must be 1-50 characters and contain only letters, numbers, spaces, hyphens, and underscores"
+        case .invalidThemePreference:
+            return "Theme preference must be 'light', 'dark', or 'system'"
+        case .invalidLanguagePreference:
+            return "Language preference must be 'en' or 'th'"
         }
     }
 }
+
+// MARK: - ProfilePictureHelper
+
+/// Helper struct for profile picture operations
+#if os(iOS)
+    struct ProfilePictureHelper {
+
+        /// Resizes an image to fit within maximum dimensions while maintaining aspect ratio
+        /// - Parameters:
+        ///   - image: Original UIImage
+        ///   - maxSize: Maximum width/height in pixels
+        /// - Returns: JPEG data of resized image, or nil if resize fails
+        static func resizeImage(_ image: UIImage, maxSize: CGFloat = 512) -> Data? {
+            let size = image.size
+            let ratio = min(maxSize / size.width, maxSize / size.height)
+
+            // If image is already smaller than maxSize, use original size
+            let newSize: CGSize
+            if ratio >= 1.0 {
+                newSize = size
+            } else {
+                newSize = CGSize(width: size.width * ratio, height: size.height * ratio)
+            }
+
+            UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+            let resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+            UIGraphicsEndImageContext()
+
+            return resizedImage?.jpegData(compressionQuality: 0.8)
+        }
+
+        /// Extracts storage path from a Supabase Storage public URL
+        /// - Parameter url: Public URL string
+        /// - Returns: Storage path (e.g., "userId/filename.jpg"), or nil if extraction fails
+        static func extractStoragePath(from url: String) -> String? {
+            // URL format: https://{project}.supabase.co/storage/v1/object/public/profile-pictures/{path}
+            guard let urlComponents = URLComponents(string: url),
+                let pathComponents = urlComponents.path.components(
+                    separatedBy: "/profile-pictures/"
+                )
+                .last
+            else {
+                return nil
+            }
+            return pathComponents
+        }
+    }
+#endif

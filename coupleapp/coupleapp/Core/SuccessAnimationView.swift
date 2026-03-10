@@ -1,5 +1,9 @@
 import SwiftUI
 
+#if os(iOS)
+    import UIKit
+#endif
+
 /// Success animation view with confetti effect
 /// Shows celebratory animation for quest completion and reward redemption
 struct SuccessAnimationView: View {
@@ -98,11 +102,17 @@ struct SuccessAnimationView: View {
             AppTheme.partner,
         ]
 
+        #if os(iOS)
+            let screenWidth = UIScreen.main.bounds.width
+        #else
+            let screenWidth: CGFloat = 800
+        #endif
+
         for i in 0..<50 {
             let piece = ConfettiPiece(
                 id: i,
                 color: colors.randomElement() ?? .blue,
-                x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                x: CGFloat.random(in: 0...screenWidth),
                 y: -50,
                 rotation: Double.random(in: 0...360),
                 scale: CGFloat.random(in: 0.5...1.5)
@@ -138,7 +148,11 @@ struct ConfettiPieceView: View {
                 withAnimation(
                     .easeIn(duration: Double.random(in: 1.5...2.5))
                 ) {
-                    yOffset = UIScreen.main.bounds.height + 100
+                    #if os(iOS)
+                        yOffset = UIScreen.main.bounds.height + 100
+                    #else
+                        yOffset = 900
+                    #endif
                     rotation = Double.random(in: 360...720)
                 }
             }

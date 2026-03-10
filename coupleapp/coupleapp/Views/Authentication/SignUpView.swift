@@ -6,6 +6,8 @@ struct SignUpView: View {
     @StateObject private var viewModel = AuthViewModel()
     @FocusState private var focusedField: Field?
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     enum Field {
         case email, password, confirmPassword
@@ -13,9 +15,11 @@ struct SignUpView: View {
 
     var body: some View {
         ZStack {
-            // Background gradient
-            AppTheme.backgroundGradient
-                .ignoresSafeArea()
+            // Background gradient (adaptive to theme)
+            AppTheme.backgroundGradient(
+                for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+            )
+            .ignoresSafeArea()
 
             ScrollView {
                 VStack(spacing: 24) {
@@ -40,6 +44,13 @@ struct SignUpView: View {
             .navigationBarTitleDisplayMode(.large)
         #endif
         .disabled(viewModel.isLoading)
+        .alert("Error", isPresented: $viewModel.showError) {
+            Button("OK") {
+                viewModel.dismissError()
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "An error occurred")
+        }
         .alert("Success", isPresented: $viewModel.showSuccess) {
             Button("OK") {
                 viewModel.dismissSuccess()
@@ -89,8 +100,9 @@ struct SignUpView: View {
                     .fontWeight(.medium)
 
                 TextField("your@email.com", text: $viewModel.email)
+                    .foregroundColor(inputTextColor)
                     .padding()
-                    .background(Color.white)
+                    .background(inputFieldBackground)
                     .cornerRadius(AppTheme.cornerRadiusMedium)
                     .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.emailAddress)
@@ -119,8 +131,9 @@ struct SignUpView: View {
                     .fontWeight(.medium)
 
                 SecureField("Create a password", text: $viewModel.password)
+                    .foregroundColor(inputTextColor)
                     .padding()
-                    .background(Color.white)
+                    .background(inputFieldBackground)
                     .cornerRadius(AppTheme.cornerRadiusMedium)
                     .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.newPassword)
@@ -138,8 +151,9 @@ struct SignUpView: View {
                     .fontWeight(.medium)
 
                 SecureField("Confirm your password", text: $viewModel.confirmPassword)
+                    .foregroundColor(inputTextColor)
                     .padding()
-                    .background(Color.white)
+                    .background(inputFieldBackground)
                     .cornerRadius(AppTheme.cornerRadiusMedium)
                     .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.newPassword)
@@ -158,6 +172,16 @@ struct SignUpView: View {
                 }
             }
         }
+    }
+
+    private var inputFieldBackground: Color {
+        let isDarkMode = themeManager.currentTheme.rawValue == "dark"
+        return isDarkMode ? Color(hex: "1A1A1A") : Color.white
+    }
+
+    private var inputTextColor: Color {
+        let isDarkMode = themeManager.currentTheme.rawValue == "dark"
+        return isDarkMode ? Color.white : Color.black
     }
 
     private var passwordRequirementsSection: some View {

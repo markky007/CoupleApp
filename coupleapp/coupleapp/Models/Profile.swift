@@ -12,8 +12,23 @@ struct Profile: Identifiable, Codable, Equatable {
     /// User's display name (optional, max 50 characters)
     var displayName: String?
 
+    /// Username for UI display (1-50 characters, alphanumeric + spaces/hyphens/underscores)
+    var username: String?
+
     /// Partner's user ID (optional, creates bidirectional relationship)
     var partnerId: UUID?
+
+    /// Unique code for partner pairing (6-8 characters, alphanumeric)
+    var partnerCode: String?
+
+    /// URL to profile picture in Supabase Storage
+    var profilePictureUrl: String?
+
+    /// Theme preference: "light", "dark", or "system" (default: "system")
+    var themePreference: String?
+
+    /// Language preference: "en" or "th" (default: "en")
+    var languagePreference: String?
 
     /// Total points earned by user (must be non-negative)
     var totalPoints: Int
@@ -30,7 +45,12 @@ struct Profile: Identifiable, Codable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id
         case displayName = "display_name"
+        case username
         case partnerId = "partner_id"
+        case partnerCode = "partner_code"
+        case profilePictureUrl = "profile_picture_url"
+        case themePreference = "theme_preference"
+        case languagePreference = "language_preference"
         case totalPoints = "total_points"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
@@ -60,6 +80,30 @@ struct Profile: Identifiable, Codable, Equatable {
         return name.count <= AppConstants.maxDisplayNameLength
     }
 
+    /// Validates username format and length
+    /// - Parameter username: Username to validate
+    /// - Returns: True if valid, false otherwise
+    static func isValidUsername(_ username: String) -> Bool {
+        let trimmed = username.trimmingCharacters(in: .whitespaces)
+        guard trimmed.count >= 1 && trimmed.count <= 50 else { return false }
+
+        // Allow letters, numbers, spaces, hyphens, underscores
+        let allowedCharacters = CharacterSet.alphanumerics
+            .union(CharacterSet(charactersIn: " -_"))
+        return trimmed.unicodeScalars.allSatisfy { allowedCharacters.contains($0) }
+    }
+
+    /// Validates partner code format
+    /// - Parameter code: Partner code to validate
+    /// - Returns: True if valid, false otherwise
+    static func isValidPartnerCode(_ code: String) -> Bool {
+        let trimmed = code.trimmingCharacters(in: .whitespaces).uppercased()
+        guard trimmed.count >= 6 && trimmed.count <= 8 else { return false }
+
+        // Only alphanumeric characters
+        return trimmed.allSatisfy { $0.isLetter || $0.isNumber }
+    }
+
     /// Validates that total points is non-negative
     var isValidPointBalance: Bool {
         totalPoints >= 0
@@ -79,7 +123,12 @@ extension Profile {
         Profile(
             id: id,
             displayName: displayName,
+            username: nil,
             partnerId: nil,
+            partnerCode: nil,
+            profilePictureUrl: nil,
+            themePreference: nil,
+            languagePreference: nil,
             totalPoints: 0,
             createdAt: Date(),
             updatedAt: Date()

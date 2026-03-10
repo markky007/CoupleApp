@@ -1,0 +1,240 @@
+/* 
+ * Localizable.strings (Thai)
+ * Couple Quest App - Additional Features Enhancement
+ * 
+ * This file contains all Thai translations for the app.
+ * Keys are organized by feature using dot notation.
+ */
+
+// MARK: - Pairing System (10 keys)
+
+/* Partner pairing code label */
+"pairing.code" = "รหัสคู่ครอง";
+
+/* Partner pairing code description */
+"pairing.code.description" = "แชร์รหัสนี้กับคู่ครองของคุณ";
+
+/* Enter partner code placeholder */
+"pairing.code.enter" = "ใส่รหัสคู่ครอง";
+
+/* Send pairing request button */
+"pairing.request.send" = "ส่งคำขอเชื่อมต่อ";
+
+/* Accept pairing request button */
+"pairing.request.accept" = "ยอมรับ";
+
+/* Reject pairing request button */
+"pairing.request.reject" = "ปฏิเสธ";
+
+/* Pairing status - paired */
+"pairing.status.paired" = "เชื่อมต่อแล้ว";
+
+/* Pairing status - unpaired */
+"pairing.status.unpaired" = "ยังไม่ได้เชื่อมต่อ";
+
+/* Unpair button */
+"pairing.unpair" = "ยกเลิกการเชื่อมต่อ";
+
+/* Pairing request notification */
+"pairing.request.notification" = "%@ ต้องการเชื่อมต่อกับคุณ";
+
+/* Pairing view title */
+"pairing.title" = "การเชื่อมต่อคู่ครอง";
+
+/* Your partner code section */
+"pairing.your_code" = "รหัสคู่ครองของคุณ";
+
+/* Copy code button */
+"pairing.copy_code" = "คัดลอกรหัส";
+
+/* Enter code section */
+"pairing.enter_code" = "ใส่รหัสคู่ครอง";
+
+/* Code placeholder */
+"pairing.code.placeholder" = "ใส่รหัส 6-8 ตัวอักษร";
+
+/* Send request button */
+"pairing.send_request" = "ส่งคำขอ";
+
+/* Pending requests section */
+"pairing.pending_requests" = "คำขอที่รอดำเนินการ";
+
+/* No requests message */
+"pairing.no_requests" = "ไม่มีคำขอเชื่อมต่อที่รอดำเนินการ";
+
+/* Unknown user */
+"pairing.unknown_user" = "ผู้ใช้ที่ไม่รู้จัก";
+
+/* Wants to pair message */
+"pairing.wants_to_pair" = "ต้องการเชื่อมต่อกับคุณ";
+
+/* Accept button */
+"pairing.accept" = "ยอมรับ";
+
+/* Reject button */
+"pairing.reject" = "ปฏิเสธ";
+
+/* Paired partner section */
+"pairing.paired_partner" = "คู่ครองที่เชื่อมต่อ";
+
+/* No partner message */
+"pairing.no_partner" = "ยังไม่มีคู่ครอง";
+
+/* No partner hint */
+"pairing.no_partner.hint" = "แชร์รหัสของคุณหรือใส่รหัสคู่ครองเพื่อเชื่อมต่อ";
+
+/* Unpair confirmation title */
+"pairing.unpair.confirm.title" = "ยกเลิกการเชื่อมต่อคู่ครอง";
+
+/* Unpair confirmation message */
+"pairing.unpair.confirm.message" = "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการเชื่อมต่อ? การกระทำนี้จะตัดการเชื่อมต่อของทั้งสองคน";
+
+/* Unpair button */
+"pairing.unpair.button" = "ยกเลิกการเชื่อมต่อ";
+
+/* Code loading message */
+"pairing.code.loading" = "กำลังโหลดรหัส...";
+
+/* Error title */
+"error.title" = "ข้อผิดพลาด";
+
+/* Success title */
+"success.title" = "สำเร็จ";
+
+/* OK button */
+"button.ok" = "ตกลง";
+
+/* Cancel button */
+"button.cancel" = "ยกเลิก";
+
+
+// MARK: - Profile Management (8 keys)
+
+/* Edit profile button */
+"profile.edit" = "แก้ไขโปรไฟล์";
+
+/* Username label */
+"profile.username" = "ชื่อที่แสดง";
+
+/* Username placeholder */
+"profile.username.placeholder" = "ใส่ชื่อที่แสดงของคุณ";
+
+/* Save profile button */
+"profile.save" = "บันทึก";
+
+/* Profile picture label */
+"profile.picture" = "รูปโปรไฟล์";
+
+/* Upload picture button */
+"profile.picture.upload" = "อัพโหลดรูปภาพ";
+
+/* No partner message */
+"profile.no_partner" = "ยังไม่มีคู่ครอง";
+
+/* Total points label */
+"profile.total_points" = "คะแนนทั้งหมด";
+
+
+// MARK: - Theme System (5 keys)
+
+/* Light theme option */
+"theme.light" = "สว่าง";
+
+/* Dark theme option */
+"theme.dark" = "มืด";
+
+/* System theme option */
+"theme.system" = "ตามระบบ";
+
+/* Theme setting label */
+"theme.label" = "ธีม";
+
+/* Theme description */
+"theme.description" = "เลือกธีมที่คุณต้องการ";
+
+
+// MARK: - Settings (6 keys)
+
+/* Settings screen title */
+"settings.title" = "การตั้งค่า";
+
+/* Language setting label */
+"settings.language" = "ภาษา";
+
+/* App version label */
+"settings.version" = "เวอร์ชันแอพ";
+
+/* Logout button */
+"settings.logout" = "ออกจากระบบ";
+
+/* Logout confirmation message */
+"settings.logout.confirm" = "คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?";
+
+/* Cancel button */
+"settings.cancel" = "ยกเลิก";
+
+
+// MARK: - Error Messages (15 keys)
+
+/* Invalid partner code error */
+"error.pairing.invalid_code" = "รูปแบบรหัสคู่ครองไม่ถูกต้อง";
+
+/* Partner code not found error */
+"error.pairing.code_not_found" = "ไม่พบรหัสคู่ครอง";
+
+/* Cannot pair with self error */
+"error.pairing.cannot_pair_self" = "คุณไม่สามารถเชื่อมต่อกับตัวเองได้";
+
+/* Already paired error */
+"error.pairing.already_paired" = "คุณเชื่อมต่อกับคนอื่นอยู่แล้ว";
+
+/* Recipient already paired error */
+"error.pairing.recipient_paired" = "ผู้ใช้นี้เชื่อมต่อกับคนอื่นอยู่แล้ว";
+
+/* Pairing request already exists error */
+"error.pairing.request_exists" = "มีคำขอเชื่อมต่ออยู่แล้ว";
+
+/* Pairing request not found error */
+"error.pairing.request_not_found" = "ไม่พบคำขอเชื่อมต่อ";
+
+/* Pairing request not pending error */
+"error.pairing.request_not_pending" = "คำขอเชื่อมต่อนี้ไม่ได้รอการตอบรับอีกต่อไป";
+
+/* Invalid username error */
+"error.profile.invalid_username" = "ชื่อที่แสดงต้องมี 1-50 ตัวอักษร และประกอบด้วยตัวอักษร ตัวเลข ช่องว่าง ขีดกลาง และขีดล่างเท่านั้น";
+
+/* Username taken error */
+"error.profile.username_taken" = "ชื่อที่แสดงนี้ถูกใช้งานแล้ว";
+
+/* Invalid image data error */
+"error.profile.invalid_image" = "รูปแบบรูปภาพไม่ถูกต้อง กรุณาใช้ JPEG หรือ PNG";
+
+/* Image resize failed error */
+"error.profile.resize_failed" = "ไม่สามารถปรับขนาดรูปภาพได้";
+
+/* Image too large error */
+"error.profile.image_too_large" = "รูปภาพใหญ่เกินไป ขนาดสูงสุดคือ 5MB";
+
+/* Upload failed error */
+"error.profile.upload_failed" = "อัพโหลดล้มเหลว: %@";
+
+/* Network error */
+"error.network" = "ข้อผิดพลาดเครือข่าย: %@";
+
+
+// MARK: - Common UI Elements
+
+/* OK button */
+"common.ok" = "ตกลง";
+
+/* Done button */
+"common.done" = "เสร็จสิ้น";
+
+/* Loading message */
+"common.loading" = "กำลังโหลด...";
+
+/* Success message */
+"common.success" = "สำเร็จ";
+
+/* Error title */
+"common.error" = "ข้อผิดพลาด";

@@ -5,6 +5,8 @@ struct LoginView: View {
 
     @StateObject private var viewModel = AuthViewModel()
     @FocusState private var focusedField: Field?
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     enum Field {
         case email, password
@@ -13,9 +15,11 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+                // Background gradient (adaptive to theme)
+                AppTheme.backgroundGradient(
+                    for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+                )
+                .ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 24) {
@@ -40,6 +44,13 @@ struct LoginView: View {
                 .navigationBarTitleDisplayMode(.large)
             #endif
             .disabled(viewModel.isLoading)
+            .alert("Error", isPresented: $viewModel.showError) {
+                Button("OK") {
+                    viewModel.dismissError()
+                }
+            } message: {
+                Text(viewModel.errorMessage ?? "An error occurred")
+            }
             .errorAlert()  // Use centralized error handling
             .connectionStatus()  // Show connection status banner
             .alert("Success", isPresented: $viewModel.showSuccess) {
@@ -90,8 +101,9 @@ struct LoginView: View {
                     .foregroundColor(AppTheme.textSecondary)
 
                 TextField("your@email.com", text: $viewModel.email)
+                    .foregroundColor(inputTextColor)
                     .padding()
-                    .background(Color.white)
+                    .background(inputFieldBackground)
                     .cornerRadius(AppTheme.cornerRadiusMedium)
                     .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.emailAddress)
@@ -115,8 +127,9 @@ struct LoginView: View {
                     .foregroundColor(AppTheme.textSecondary)
 
                 SecureField("Enter your password", text: $viewModel.password)
+                    .foregroundColor(inputTextColor)
                     .padding()
-                    .background(Color.white)
+                    .background(inputFieldBackground)
                     .cornerRadius(AppTheme.cornerRadiusMedium)
                     .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                     .textContentType(.password)
@@ -129,6 +142,16 @@ struct LoginView: View {
                     }
             }
         }
+    }
+
+    private var inputFieldBackground: Color {
+        let isDarkMode = themeManager.currentTheme.rawValue == "dark"
+        return isDarkMode ? Color(hex: "1A1A1A") : Color.white
+    }
+
+    private var inputTextColor: Color {
+        let isDarkMode = themeManager.currentTheme.rawValue == "dark"
+        return isDarkMode ? Color.white : Color.black
     }
 
     private var actionSection: some View {

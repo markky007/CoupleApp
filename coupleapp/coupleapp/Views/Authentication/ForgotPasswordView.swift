@@ -6,30 +6,47 @@ struct ForgotPasswordView: View {
     @StateObject private var viewModel = AuthViewModel()
     @FocusState private var isEmailFocused: Bool
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Header
-                headerSection
+        ZStack {
+            // Background gradient (adaptive to theme)
+            AppTheme.backgroundGradient(
+                for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+            )
+            .ignoresSafeArea()
 
-                // Form
-                formSection
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header
+                    headerSection
 
-                // Action
-                actionSection
+                    // Form
+                    formSection
 
-                // Info
-                infoSection
+                    // Action
+                    actionSection
+
+                    // Info
+                    infoSection
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 32)
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 32)
         }
         .navigationTitle("Reset Password")
         #if os(iOS)
             .navigationBarTitleDisplayMode(.large)
         #endif
         .disabled(viewModel.isLoading)
+        .alert("Error", isPresented: $viewModel.showError) {
+            Button("OK") {
+                viewModel.dismissError()
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "An error occurred")
+        }
         .alert("Success", isPresented: $viewModel.showSuccess) {
             Button("OK") {
                 viewModel.dismissSuccess()
@@ -69,7 +86,11 @@ struct ForgotPasswordView: View {
                 .fontWeight(.medium)
 
             TextField("your@email.com", text: $viewModel.email)
-                .textFieldStyle(.roundedBorder)
+                .foregroundColor(inputTextColor)
+                .padding()
+                .background(inputFieldBackground)
+                .cornerRadius(AppTheme.cornerRadiusMedium)
+                .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                 .textContentType(.emailAddress)
                 #if os(iOS)
                     .textInputAutocapitalization(.never)
@@ -138,6 +159,16 @@ struct ForgotPasswordView: View {
             #endif
             .cornerRadius(8)
         }
+    }
+
+    private var inputFieldBackground: Color {
+        let isDarkMode = themeManager.currentTheme.rawValue == "dark"
+        return isDarkMode ? Color(hex: "1A1A1A") : Color.white
+    }
+
+    private var inputTextColor: Color {
+        let isDarkMode = themeManager.currentTheme.rawValue == "dark"
+        return isDarkMode ? Color.white : Color.black
     }
 }
 

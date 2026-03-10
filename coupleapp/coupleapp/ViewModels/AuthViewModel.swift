@@ -28,9 +28,16 @@ class AuthViewModel: ObservableObject {
     /// Whether to show success alert
     @Published var showSuccess = false
 
+    /// Error message to display
+    @Published var errorMessage: String?
+
+    /// Whether to show error alert
+    @Published var showError = false
+
     // MARK: - Dependencies
 
     private let authService = AuthService.shared
+    private let profileService = ProfileService.shared
     private let errorManager = ErrorManager.shared
     private let networkMonitor = NetworkMonitor.shared
 
@@ -66,19 +73,13 @@ class AuthViewModel: ObservableObject {
     /// Signs in user with email and password
     func signIn() async {
         guard canSignIn else {
-            errorManager.handle(
-                AuthError.invalidPassword,
-                context: "Sign In - Form Validation"
-            )
+            showErrorMessage("Please enter both email and password")
             return
         }
 
         // Check network connectivity
         guard !networkMonitor.isOfflineMode else {
-            errorManager.handle(
-                AuthError.networkError,
-                context: "Sign In - Offline"
-            )
+            showErrorMessage("No internet connection. Please check your network.")
             return
         }
 
@@ -91,8 +92,10 @@ class AuthViewModel: ObservableObject {
             }
             // Success - session will be updated automatically
             clearForm()
+        } catch let error as AuthError {
+            showErrorMessage(error.localizedDescription)
         } catch {
-            errorManager.handle(error, context: "Sign In")
+            showErrorMessage("Failed to sign in: \(error.localizedDescription)")
         }
 
         isLoading = false
@@ -102,34 +105,19 @@ class AuthViewModel: ObservableObject {
     func signUp() async {
         guard canSignUp else {
             if !isEmailValid {
-                errorManager.handle(
-                    AuthError.invalidEmail,
-                    context: "Sign Up - Form Validation"
-                )
+                showErrorMessage("Please enter a valid email address")
             } else if !isPasswordValid {
-                errorManager.handle(
-                    AuthError.weakPassword,
-                    context: "Sign Up - Form Validation"
-                )
+                showErrorMessage(
+                    "Password must be at least \(AppConstants.minPasswordLength) characters")
             } else if !passwordsMatch {
-                let error = AppError(
-                    title: "Passwords Don't Match",
-                    message: "Please make sure both passwords are the same.",
-                    type: .validation,
-                    retryAction: nil
-                )
-                errorManager.currentError = error
-                errorManager.showError = true
+                showErrorMessage("Passwords do not match")
             }
             return
         }
 
         // Check network connectivity
         guard !networkMonitor.isOfflineMode else {
-            errorManager.handle(
-                AuthError.networkError,
-                context: "Sign Up - Offline"
-            )
+            showErrorMessage("No internet connection. Please check your network.")
             return
         }
 
@@ -140,10 +128,22 @@ class AuthViewModel: ObservableObject {
             try await RetryManager.retryNetworkOperation {
                 try await self.authService.signUp(email: self.email, password: self.password)
             }
+
+            // Create profile for the new user
+            if let userId = authService.currentUserId {
+                // Use email as display name initially
+                let displayName = email.components(separatedBy: "@").first ?? "User"
+                try await profileService.createProfile(userId: userId, displayName: displayName)
+            }
+
             showSuccessMessage("Account created! Please check your email to confirm.")
             clearForm()
+        } catch let error as AuthError {
+            showErrorMessage(error.localizedDescription)
+        } catch let error as ProfileError {
+            showErrorMessage(error.localizedDescription)
         } catch {
-            errorManager.handle(error, context: "Sign Up")
+            showErrorMessage("Failed to create account: \(error.localizedDescription)")
         }
 
         isLoading = false
@@ -152,19 +152,13 @@ class AuthViewModel: ObservableObject {
     /// Sends password reset email
     func resetPassword() async {
         guard isEmailValid else {
-            errorManager.handle(
-                AuthError.invalidEmail,
-                context: "Password Reset - Form Validation"
-            )
+            showErrorMessage("Please enter a valid email address")
             return
         }
 
         // Check network connectivity
         guard !networkMonitor.isOfflineMode else {
-            errorManager.handle(
-                AuthError.networkError,
-                context: "Password Reset - Offline"
-            )
+            showErrorMessage("No internet connection. Please check your network.")
             return
         }
 
@@ -177,8 +171,10 @@ class AuthViewModel: ObservableObject {
             }
             showSuccessMessage("Password reset email sent! Please check your inbox.")
             clearForm()
+        } catch let error as AuthError {
+            showErrorMessage(error.localizedDescription)
         } catch {
-            errorManager.handle(error, context: "Password Reset")
+            showErrorMessage("Failed to send reset email: \(error.localizedDescription)")
         }
 
         isLoading = false
@@ -191,8 +187,10 @@ class AuthViewModel: ObservableObject {
         do {
             try await authService.signOut()
             clearForm()
+        } catch let error as AuthError {
+            showErrorMessage(error.localizedDescription)
         } catch {
-            errorManager.handle(error, context: "Sign Out")
+            showErrorMessage("Failed to sign out: \(error.localizedDescription)")
         }
 
         isLoading = false
@@ -213,9 +211,21 @@ class AuthViewModel: ObservableObject {
         showSuccess = true
     }
 
+    /// Shows error message with alert
+    private func showErrorMessage(_ message: String) {
+        errorMessage = message
+        showError = true
+    }
+
     /// Dismisses success alert
     func dismissSuccess() {
         showSuccess = false
         successMessage = nil
+    }
+
+    /// Dismisses error alert
+    func dismissError() {
+        showError = false
+        errorMessage = nil
     }
 }

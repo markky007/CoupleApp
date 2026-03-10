@@ -6,6 +6,8 @@ struct OnboardingView: View {
 
     @StateObject private var onboardingManager = OnboardingManager.shared
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     @State private var currentPage = 0
 
@@ -45,9 +47,11 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            // Background gradient
-            AppTheme.backgroundGradient
-                .ignoresSafeArea()
+            // Background gradient (adaptive to theme)
+            AppTheme.backgroundGradient(
+                for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+            )
+            .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Skip button
@@ -67,8 +71,10 @@ struct OnboardingView: View {
                             .tag(index)
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
-                .indexViewStyle(.page(backgroundDisplayMode: .always))
+                #if os(iOS)
+                    .tabViewStyle(.page(indexDisplayMode: .always))
+                    .indexViewStyle(.page(backgroundDisplayMode: .always))
+                #endif
 
                 // Navigation buttons
                 HStack(spacing: 16) {

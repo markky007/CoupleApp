@@ -9,13 +9,17 @@ struct RewardShopView: View {
     @State private var showCreateReward = false
     @State private var showApprovalQueue = false
     @State private var showTooltip = false
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+                // Background gradient (adaptive to theme)
+                AppTheme.backgroundGradient(
+                    for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+                )
+                .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.rewards.isEmpty {
                     RewardShopSkeletonView()
@@ -28,21 +32,39 @@ struct RewardShopView: View {
             }
             .navigationTitle("Reward Shop")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        showApprovalQueue = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "bell.badge.fill")
-                            if !viewModel.pendingApprovals.isEmpty {
-                                Text("\(viewModel.pendingApprovals.count)")
-                                    .font(.caption2)
-                                    .fontWeight(.bold)
+                #if os(iOS)
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button {
+                            showApprovalQueue = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "bell.badge.fill")
+                                if !viewModel.pendingApprovals.isEmpty {
+                                    Text("\(viewModel.pendingApprovals.count)")
+                                        .font(.caption2)
+                                        .fontWeight(.bold)
+                                }
                             }
+                            .foregroundStyle(AppTheme.secondaryGradient)
                         }
-                        .foregroundStyle(AppTheme.secondaryGradient)
                     }
-                }
+                #else
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showApprovalQueue = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "bell.badge.fill")
+                                if !viewModel.pendingApprovals.isEmpty {
+                                    Text("\(viewModel.pendingApprovals.count)")
+                                        .font(.caption2)
+                                        .fontWeight(.bold)
+                                }
+                            }
+                            .foregroundStyle(AppTheme.secondaryGradient)
+                        }
+                    }
+                #endif
 
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -169,7 +191,10 @@ struct RewardShopView: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
-                .fill(AppTheme.cardGradient)
+                .fill(
+                    AppTheme.cardGradient(
+                        for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
+                )
                 .shadow(
                     color: AppTheme.shadowColor,
                     radius: AppTheme.shadowRadius,

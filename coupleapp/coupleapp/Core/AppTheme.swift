@@ -48,16 +48,53 @@ struct AppTheme {
         endPoint: .bottomTrailing
     )
 
-    /// Background gradient for main screens
+    /// Background gradient for main screens (light mode)
+    static let backgroundGradientLight = LinearGradient(
+        colors: [Color(hex: "FFEEF8"), Color(hex: "F3F4F6")],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
+    /// Default background gradient (light mode - for previews and static contexts)
     static let backgroundGradient = LinearGradient(
         colors: [Color(hex: "FFEEF8"), Color(hex: "F3F4F6")],
         startPoint: .top,
         endPoint: .bottom
     )
 
-    /// Card gradient for elevated content
-    static let cardGradient = LinearGradient(
+    /// Card gradient for elevated content (light mode)
+    static let cardGradientLight = LinearGradient(
         colors: [Color.white.opacity(0.9), Color.white.opacity(0.7)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    // MARK: - Dark Mode Gradients
+
+    /// Primary gradient for dark mode
+    static let primaryGradientDark = LinearGradient(
+        colors: [Color(hex: "D4145A"), Color(hex: "8B4A5A")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    /// Secondary gradient for dark mode
+    static let secondaryGradientDark = LinearGradient(
+        colors: [Color(hex: "6FA88E"), Color(hex: "3A8EBA")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    /// Background gradient for dark mode
+    static let backgroundGradientDark = LinearGradient(
+        colors: [Color(hex: "1A1A2E"), Color(hex: "16213E")],
+        startPoint: .top,
+        endPoint: .bottom
+    )
+
+    /// Card gradient for dark mode
+    static let cardGradientDark = LinearGradient(
+        colors: [Color(hex: "2D2D44").opacity(0.9), Color(hex: "1F1F2E").opacity(0.7)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -111,6 +148,150 @@ struct AppTheme {
         #else
             return Color(NSColor.controlBackgroundColor)
         #endif
+    }
+
+    // MARK: - Adaptive Colors for Dark Mode Support
+
+    /// Primary background - adapts to light/dark mode
+    static var primaryBackground: Color {
+        #if os(iOS)
+            return Color(UIColor.systemBackground)
+        #else
+            return Color(NSColor.windowBackgroundColor)
+        #endif
+    }
+
+    /// Secondary background - adapts to light/dark mode
+    static var secondaryBackgroundAdaptive: Color {
+        #if os(iOS)
+            return Color(UIColor.secondarySystemBackground)
+        #else
+            return Color(NSColor.controlBackgroundColor)
+        #endif
+    }
+
+    /// Tertiary background - adapts to light/dark mode
+    static var tertiaryBackground: Color {
+        #if os(iOS)
+            return Color(UIColor.tertiarySystemBackground)
+        #else
+            return Color(NSColor.textBackgroundColor)
+        #endif
+    }
+
+    /// Primary text color - adapts to light/dark mode
+    static var primaryText: Color {
+        #if os(iOS)
+            return Color(UIColor.label)
+        #else
+            return Color(NSColor.labelColor)
+        #endif
+    }
+
+    /// Secondary text color - adapts to light/dark mode
+    static var secondaryText: Color {
+        #if os(iOS)
+            return Color(UIColor.secondaryLabel)
+        #else
+            return Color(NSColor.secondaryLabelColor)
+        #endif
+    }
+
+    /// Tertiary text color - adapts to light/dark mode
+    static var tertiaryText: Color {
+        #if os(iOS)
+            return Color(UIColor.tertiaryLabel)
+        #else
+            return Color(NSColor.tertiaryLabelColor)
+        #endif
+    }
+
+    /// Separator color - adapts to light/dark mode
+    static var separator: Color {
+        #if os(iOS)
+            return Color(UIColor.separator)
+        #else
+            return Color(NSColor.separatorColor)
+        #endif
+    }
+
+    /// Card background - adapts to light/dark mode
+    static var cardBackground: Color {
+        #if os(iOS)
+            return Color(UIColor.secondarySystemBackground)
+        #else
+            return Color(NSColor.controlBackgroundColor)
+        #endif
+    }
+
+    // MARK: - Adaptive Gradients (respond to theme changes)
+
+    /// Background gradient that adapts to light/dark mode
+    /// Use this in views with @EnvironmentObject ThemeManager to get reactive updates
+    static func backgroundGradient(for themeRawValue: String, systemScheme: ColorScheme)
+        -> LinearGradient
+    {
+        let effectiveScheme =
+            themeRawValue == "dark"
+            ? ColorScheme.dark : (themeRawValue == "light" ? .light : systemScheme)
+        return effectiveScheme == .dark ? backgroundGradientDark : backgroundGradientLight
+    }
+
+    /// Card gradient that adapts to light/dark mode
+    /// Use this in views with @EnvironmentObject ThemeManager to get reactive updates
+    static func cardGradient(for themeRawValue: String, systemScheme: ColorScheme)
+        -> LinearGradient
+    {
+        let effectiveScheme =
+            themeRawValue == "dark"
+            ? ColorScheme.dark : (themeRawValue == "light" ? .light : systemScheme)
+        return effectiveScheme == .dark ? cardGradientDark : cardGradientLight
+    }
+
+    /// Primary gradient that adapts to light/dark mode
+    static func adaptivePrimaryGradient(
+        for themeRawValue: String, systemScheme: ColorScheme
+    ) -> LinearGradient {
+        let effectiveScheme =
+            themeRawValue == "dark"
+            ? ColorScheme.dark : (themeRawValue == "light" ? .light : systemScheme)
+        return effectiveScheme == .dark ? primaryGradientDark : primaryGradient
+    }
+
+    /// Secondary gradient that adapts to light/dark mode
+    static func adaptiveSecondaryGradient(
+        for themeRawValue: String, systemScheme: ColorScheme
+    ) -> LinearGradient {
+        let effectiveScheme =
+            themeRawValue == "dark"
+            ? ColorScheme.dark : (themeRawValue == "light" ? .light : systemScheme)
+        return effectiveScheme == .dark ? secondaryGradientDark : secondaryGradient
+    }
+
+    // MARK: - Legacy Adaptive Gradients (deprecated - for backwards compatibility)
+
+    /// Background gradient that adapts to light/dark mode
+    /// @deprecated Use backgroundGradient(for:systemScheme:) instead
+    static func backgroundGradient(for colorScheme: ColorScheme) -> LinearGradient {
+        colorScheme == .dark ? backgroundGradientDark : backgroundGradientLight
+    }
+
+    /// Card gradient that adapts to light/dark mode
+    /// @deprecated Use cardGradient(for:systemScheme:) instead
+    static func cardGradient(for colorScheme: ColorScheme) -> LinearGradient {
+        colorScheme == .dark ? cardGradientDark : cardGradientLight
+    }
+
+    /// Primary gradient that adapts to light/dark mode
+    /// @deprecated Use adaptivePrimaryGradient(for:systemScheme:) instead
+    static func adaptivePrimaryGradient(for colorScheme: ColorScheme) -> LinearGradient {
+        colorScheme == .dark ? primaryGradientDark : primaryGradient
+    }
+
+    /// Secondary gradient that adapts to light/dark mode
+    /// @deprecated Use adaptiveSecondaryGradient(for:systemScheme:) instead
+    static func adaptiveSecondaryGradient(for colorScheme: ColorScheme) -> LinearGradient {
+        colorScheme == .dark ? secondaryGradientDark : secondaryGradient
     }
 
     // MARK: - Corner Radius
@@ -206,10 +387,26 @@ extension View {
         self.background(AppTheme.primaryGradient)
     }
 
-    /// Apply card style with gradient
+    /// Apply card style with gradient (adaptive to color scheme)
+    /// Note: This uses static light gradient. For reactive theme support, use cardStyleReactive()
     func cardStyle() -> some View {
         self
-            .background(AppTheme.cardGradient)
+            .background(AppTheme.cardGradientLight)
+            .cornerRadius(AppTheme.cornerRadiusMedium)
+            .shadow(
+                color: AppTheme.shadowColor,
+                radius: AppTheme.shadowRadius,
+                x: AppTheme.shadowOffset.width,
+                y: AppTheme.shadowOffset.height
+            )
+    }
+
+    /// Apply card style with reactive gradient that responds to theme changes
+    /// Use this in views that observe ThemeManager
+    func cardStyleReactive(theme: String, systemScheme: ColorScheme) -> some View {
+        return
+            self
+            .background(AppTheme.cardGradient(for: theme, systemScheme: systemScheme))
             .cornerRadius(AppTheme.cornerRadiusMedium)
             .shadow(
                 color: AppTheme.shadowColor,

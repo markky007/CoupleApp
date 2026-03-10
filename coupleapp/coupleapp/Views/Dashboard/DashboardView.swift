@@ -8,13 +8,17 @@ struct DashboardView: View {
     @StateObject private var authService = AuthService.shared
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var viewModel = DashboardViewModel()
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+                // Background gradient (adaptive to theme)
+                AppTheme.backgroundGradient(
+                    for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+                )
+                .ignoresSafeArea()
 
                 if viewModel.isLoading {
                     DashboardSkeletonView()
@@ -127,7 +131,9 @@ struct DashboardView: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .cardStyle()
+        .cardStyleReactive(
+            theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+        )
         .transition(.scale.combined(with: .opacity))
     }
 
@@ -150,7 +156,8 @@ struct DashboardView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .cardStyle()
+                .cardStyleReactive(
+                    theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
 
                 // Partner points
                 VStack(spacing: 8) {
@@ -164,7 +171,8 @@ struct DashboardView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .cardStyle()
+                .cardStyleReactive(
+                    theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
             }
         }
     }
@@ -222,7 +230,8 @@ struct DashboardView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .cardStyle()
+                .cardStyleReactive(
+                    theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
             }
         }
     }
@@ -268,7 +277,8 @@ struct DashboardView: View {
                 }
             }
             .padding()
-            .cardStyle()
+            .cardStyleReactive(
+                theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
         }
     }
 
@@ -317,7 +327,8 @@ struct DashboardView: View {
                 }
             }
             .padding()
-            .cardStyle()
+            .cardStyleReactive(
+                theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
         }
     }
 
@@ -336,6 +347,9 @@ struct DashboardView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .onTapGesture {
+                    HapticManager.shared.light()
+                }
 
                 NavigationLink(destination: RewardShopView()) {
                     QuickActionButtonContent(
@@ -345,6 +359,9 @@ struct DashboardView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .onTapGesture {
+                    HapticManager.shared.light()
+                }
 
                 NavigationLink(destination: EventListView()) {
                     QuickActionButtonContent(
@@ -354,6 +371,9 @@ struct DashboardView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .onTapGesture {
+                    HapticManager.shared.light()
+                }
 
                 NavigationLink(destination: TransactionHistoryView()) {
                     QuickActionButtonContent(
@@ -363,6 +383,9 @@ struct DashboardView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .onTapGesture {
+                    HapticManager.shared.light()
+                }
 
                 NavigationLink(destination: ProfileView()) {
                     QuickActionButtonContent(
@@ -372,6 +395,9 @@ struct DashboardView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .onTapGesture {
+                    HapticManager.shared.light()
+                }
             }
         }
     }
@@ -383,7 +409,6 @@ struct QuickActionButtonContent: View {
     let icon: String
     let title: String
     let color: Color
-    @State private var isPressed = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -405,15 +430,6 @@ struct QuickActionButtonContent: View {
         .frame(maxWidth: .infinity)
         .padding()
         .cardStyle()
-        .scaleEffect(isPressed ? 0.95 : 1.0)
-        .animation(AppTheme.springAnimation, value: isPressed)
-        .onTapGesture {
-            HapticManager.shared.light()
-            isPressed = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                isPressed = false
-            }
-        }
     }
 }
 

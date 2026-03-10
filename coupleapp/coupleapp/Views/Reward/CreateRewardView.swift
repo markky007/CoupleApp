@@ -6,6 +6,8 @@ struct CreateRewardView: View {
 
     @ObservedObject var viewModel: RewardViewModel
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     @State private var title: String = ""
     @State private var pointsCostText: String = ""
@@ -15,9 +17,11 @@ struct CreateRewardView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                AppTheme.backgroundGradient
-                    .ignoresSafeArea()
+                // Background gradient (adaptive to theme)
+                AppTheme.backgroundGradient(
+                    for: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+                )
+                .ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 24) {
@@ -34,7 +38,9 @@ struct CreateRewardView: View {
                 }
             }
             .navigationTitle("Create Reward")
-            .navigationBarTitleDisplayMode(.inline)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
@@ -108,7 +114,7 @@ struct CreateRewardView: View {
                     .padding()
                     .background(
                         RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium)
-                            .fill(Color(.systemBackground))
+                            .fill(AppTheme.primaryBackground)
                             .shadow(
                                 color: AppTheme.shadowColor,
                                 radius: 4,
@@ -134,13 +140,15 @@ struct CreateRewardView: View {
                         .foregroundStyle(AppTheme.pointsGradient)
 
                     TextField("100", text: $pointsCostText)
-                        .keyboardType(.numberPad)
+                        #if os(iOS)
+                            .keyboardType(.numberPad)
+                        #endif
                         .textFieldStyle(.plain)
                 }
                 .padding()
                 .background(
                     RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium)
-                        .fill(Color(.systemBackground))
+                        .fill(AppTheme.primaryBackground)
                         .shadow(
                             color: AppTheme.shadowColor,
                             radius: 4,
