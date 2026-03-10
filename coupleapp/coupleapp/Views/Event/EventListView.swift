@@ -203,7 +203,9 @@ struct EventListView: View {
                 TipRow(icon: "bell", text: localizationManager.localized("event.idea.reminder"))
             }
             .padding()
-            .cardStyle()
+            .cardStyleReactive(
+                theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+            )
             .padding(.horizontal, 32)
             .padding(.top, 16)
         }

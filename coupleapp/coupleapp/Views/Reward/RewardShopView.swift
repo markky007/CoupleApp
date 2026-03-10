@@ -264,7 +264,9 @@ struct RewardShopView: View {
                 TipRow(icon: "bed.double", text: localizationManager.localized("reward.idea.sleep"))
             }
             .padding()
-            .cardStyle()
+            .cardStyleReactive(
+                theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+            )
             .padding(.horizontal, 32)
             .padding(.top, 16)
         }

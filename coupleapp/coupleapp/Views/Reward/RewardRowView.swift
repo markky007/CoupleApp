@@ -6,6 +6,9 @@ struct RewardRowView: View {
     let reward: Reward
     @ObservedObject var viewModel: RewardViewModel
     @State private var isPressed = false
+    @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -67,7 +70,7 @@ struct RewardRowView: View {
                         viewModel.confirmRedemption(for: reward)
                     }
                 } label: {
-                    Text("Redeem")
+                    Text(localizationManager.localized("reward.redeem", reward.pointsCost))
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
@@ -95,6 +98,7 @@ struct RewardRowView: View {
             }
         }
         .padding()
-        .cardStyle()
+        .cardStyleReactive(
+            theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
     }
 }

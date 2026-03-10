@@ -169,7 +169,9 @@ struct QuestBoardView: View {
                 )
             }
             .padding()
-            .cardStyle()
+            .cardStyleReactive(
+                theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+            )
             .padding(.horizontal, 32)
             .padding(.top, 16)
         }
@@ -185,6 +187,9 @@ struct QuestRowView: View {
     @State private var showDeleteConfirmation = false
     @State private var offset: CGFloat = 0
     @State private var showSuccessAnimation = false
+    @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     private let swipeThreshold: CGFloat = 100
 
@@ -198,7 +203,7 @@ struct QuestRowView: View {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.title)
                         .foregroundColor(.white)
-                    Text("Complete")
+                    Text(localizationManager.localized("quest.complete"))
                         .font(.caption)
                         .foregroundColor(.white)
                 }
@@ -287,7 +292,9 @@ struct QuestRowView: View {
             }
         }
         .padding()
-        .cardStyle()
+        .cardStyleReactive(
+            theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme
+        )
         .contextMenu {
             Button(role: .destructive) {
                 HapticManager.shared.light()
@@ -296,18 +303,21 @@ struct QuestRowView: View {
                 Label("Delete", systemImage: "trash")
             }
         }
-        .confirmationDialog("Delete Quest", isPresented: $showDeleteConfirmation) {
+        .confirmationDialog(
+            localizationManager.localized("quest.delete.confirm"),
+            isPresented: $showDeleteConfirmation
+        ) {
+            Button(localizationManager.localized("button.cancel"), role: .cancel) {
+                HapticManager.shared.light()
+            }
             Button("Delete", role: .destructive) {
                 HapticManager.shared.medium()
                 Task {
                     await viewModel.deleteQuest(quest)
                 }
             }
-            Button("Cancel", role: .cancel) {
-                HapticManager.shared.light()
-            }
         } message: {
-            Text("Are you sure you want to delete this quest?")
+            Text(localizationManager.localized("quest.delete.confirm"))
         }
     }
 

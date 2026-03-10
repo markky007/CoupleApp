@@ -22,7 +22,15 @@ class LocalizationManager: ObservableObject {
     // MARK: - Published Properties
 
     /// Current language - changes trigger UI updates
-    @Published var currentLanguage: Language
+    @Published var currentLanguage: Language {
+        didSet {
+            print("🔄 currentLanguage didSet: \(currentLanguage.rawValue)")
+            // Force UI update
+            DispatchQueue.main.async { [weak self] in
+                self?.objectWillChange.send()
+            }
+        }
+    }
 
     // MARK: - Constants
 
@@ -65,9 +73,7 @@ class LocalizationManager: ObservableObject {
     func setLanguage(_ language: Language) {
         print("🌐 Setting language from \(currentLanguage.rawValue) to \(language.rawValue)")
 
-        // Notify observers before changing
-        objectWillChange.send()
-
+        // Update language (this will trigger didSet)
         currentLanguage = language
         UserDefaults.standard.set(language.rawValue, forKey: languagePreferenceKey)
         print("✅ Language changed to: \(language.rawValue)")
@@ -81,7 +87,6 @@ class LocalizationManager: ObservableObject {
         // Force UI update by posting notification
         NotificationCenter.default.post(name: NSNotification.Name("LanguageChanged"), object: nil)
         print("📢 Posted LanguageChanged notification")
-        print("🔄 Sent objectWillChange notification")
     }
 
     /// Loads the saved language preference from UserDefaults

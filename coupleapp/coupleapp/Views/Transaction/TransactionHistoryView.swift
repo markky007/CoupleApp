@@ -6,6 +6,7 @@ struct TransactionHistoryView: View {
 
     @StateObject private var viewModel = TransactionViewModel()
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
     @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
@@ -18,14 +19,14 @@ struct TransactionHistoryView: View {
                 .ignoresSafeArea()
 
                 if viewModel.isLoading && viewModel.transactions.isEmpty {
-                    ProgressView("Loading transactions...")
+                    ProgressView(localizationManager.localized("common.loading"))
                 } else if viewModel.filteredTransactions.isEmpty {
                     emptyStateView
                 } else {
                     transactionListView
                 }
             }
-            .navigationTitle("Transaction History")
+            .navigationTitle(localizationManager.localized("transaction.title"))
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     filterPicker
@@ -37,12 +38,13 @@ struct TransactionHistoryView: View {
             .task {
                 await viewModel.fetchTransactions()
             }
-            .alert("Error", isPresented: $viewModel.showError) {
-                Button("OK") {
+            .alert(localizationManager.localized("common.error"), isPresented: $viewModel.showError)
+            {
+                Button(localizationManager.localized("common.ok")) {
                     viewModel.dismissError()
                 }
             } message: {
-                Text(viewModel.errorMessage ?? "An error occurred")
+                Text(viewModel.errorMessage ?? localizationManager.localized("common.error"))
             }
         }
     }
@@ -85,7 +87,7 @@ struct TransactionHistoryView: View {
                     .foregroundStyle(.white)
             }
 
-            Text("No Transactions")
+            Text(localizationManager.localized("transaction.empty"))
                 .font(.title2)
                 .fontWeight(.semibold)
 
@@ -113,6 +115,9 @@ struct TransactionHistoryView: View {
 
 struct TransactionRowView: View {
     let transaction: Transaction
+    @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
+    @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -150,7 +155,8 @@ struct TransactionRowView: View {
                 .foregroundStyle(amountGradient)
         }
         .padding()
-        .cardStyle()
+        .cardStyleReactive(
+            theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
     }
 
     // MARK: - Computed Properties
