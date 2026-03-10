@@ -6,6 +6,7 @@ struct ContentView: View {
 
     @StateObject private var authService = AuthService.shared
     @StateObject private var onboardingManager = OnboardingManager.shared
+    @EnvironmentObject var localizationManager: LocalizationManager
     @State private var showOnboarding = false
 
     var body: some View {
@@ -30,6 +31,8 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut, value: authService.isAuthenticated)
+        // Force view update when language changes
+        .id(localizationManager.currentLanguage)
     }
 }
 

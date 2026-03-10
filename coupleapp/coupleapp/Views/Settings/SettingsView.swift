@@ -8,6 +8,7 @@ struct SettingsView: View {
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var authService = AuthService.shared
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
     @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
@@ -36,46 +37,49 @@ struct SettingsView: View {
                     .padding()
                 }
             }
-            .navigationTitle("Settings")
+            .navigationTitle(localizationManager.localized("settings.title"))
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.large)
             #endif
-            .alert("Error", isPresented: $viewModel.showError) {
-                Button("OK") {
+            .alert(localizationManager.localized("common.error"), isPresented: $viewModel.showError)
+            {
+                Button(localizationManager.localized("common.ok")) {
                     viewModel.dismissError()
                 }
             } message: {
                 Text(viewModel.errorMessage ?? "An error occurred")
             }
-            .alert("Success", isPresented: $viewModel.showSuccess) {
-                Button("OK") {
+            .alert(
+                localizationManager.localized("common.success"), isPresented: $viewModel.showSuccess
+            ) {
+                Button(localizationManager.localized("common.ok")) {
                     viewModel.dismissSuccess()
                 }
             } message: {
                 Text(viewModel.successMessage ?? "Success")
             }
             .alert(
-                "Unpair from Partner",
+                localizationManager.localized("settings.unpair.message"),
                 isPresented: $viewModel.showUnpairConfirmation
             ) {
-                Button("Cancel", role: .cancel) {
+                Button(localizationManager.localized("button.cancel"), role: .cancel) {
                     viewModel.cancelUnpair()
                 }
-                Button("Unpair", role: .destructive) {
+                Button(localizationManager.localized("settings.unpair"), role: .destructive) {
                     Task {
                         await viewModel.unpairPartner()
                     }
                 }
             } message: {
-                Text(
-                    "Are you sure you want to unpair from your partner? You can pair again anytime."
-                )
+                Text(localizationManager.localized("settings.unpair.confirm"))
             }
             .task {
                 if let userId = authService.currentUserId {
                     await viewModel.loadProfile(userId: userId)
                 }
             }
+            // Force view update when language changes
+            .id(localizationManager.currentLanguage)
         }
     }
 
@@ -83,7 +87,7 @@ struct SettingsView: View {
 
     private var themeSection: some View {
         VStack(spacing: 16) {
-            Text("Theme")
+            Text(localizationManager.localized("theme.label"))
                 .font(.headline)
                 .foregroundColor(AppTheme.primaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -130,7 +134,7 @@ struct SettingsView: View {
 
     private var languageSection: some View {
         VStack(spacing: 16) {
-            Text("Language")
+            Text(localizationManager.localized("settings.language"))
                 .font(.headline)
                 .foregroundColor(AppTheme.primaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -152,7 +156,7 @@ struct SettingsView: View {
 
                             Spacer()
 
-                            if viewModel.currentLanguage == language {
+                            if localizationManager.currentLanguage == language {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundStyle(AppTheme.primaryGradient)
                             }
@@ -177,7 +181,7 @@ struct SettingsView: View {
 
     private var partnerSection: some View {
         VStack(spacing: 16) {
-            Text("Partner")
+            Text(localizationManager.localized("settings.partner"))
                 .font(.headline)
                 .foregroundColor(AppTheme.primaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -190,7 +194,7 @@ struct SettingsView: View {
                             .foregroundColor(AppTheme.primary)
                             .frame(width: 30)
 
-                        Text("Paired")
+                        Text(localizationManager.localized("profile.paired"))
                             .font(.subheadline)
                             .foregroundColor(AppTheme.primaryText)
 
@@ -209,7 +213,7 @@ struct SettingsView: View {
                     } label: {
                         HStack {
                             Image(systemName: "link.badge.minus")
-                            Text("Unpair")
+                            Text(localizationManager.localized("settings.unpair"))
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -226,7 +230,7 @@ struct SettingsView: View {
                             .foregroundColor(AppTheme.tertiaryText)
                             .frame(width: 30)
 
-                        Text("Not paired")
+                        Text(localizationManager.localized("profile.not_paired"))
                             .font(.subheadline)
                             .foregroundColor(AppTheme.secondaryText)
 
@@ -257,7 +261,7 @@ struct SettingsView: View {
         } label: {
             HStack {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
-                Text("Sign Out")
+                Text(localizationManager.localized("settings.sign_out"))
             }
             .frame(maxWidth: .infinity)
             .padding()

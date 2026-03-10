@@ -10,6 +10,7 @@ struct RewardShopView: View {
     @State private var showApprovalQueue = false
     @State private var showTooltip = false
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
     @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
@@ -30,7 +31,7 @@ struct RewardShopView: View {
                     rewardListView
                 }
             }
-            .navigationTitle("Reward Shop")
+            .navigationTitle(localizationManager.localized("reward.title"))
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
@@ -143,12 +144,14 @@ struct RewardShopView: View {
             )
             .tooltip(
                 message:
-                    "Tap a reward to redeem it! Your partner must approve rewards before redemption.",
+                    localizationManager.localized("reward.instruction"),
                 isShowing: $showTooltip,
                 onDismiss: {
                     onboardingManager.hasSeenRewardTooltip = true
                 }
             )
+            // Force view update when language changes
+            .id(localizationManager.currentLanguage)
         }
     }
 
@@ -219,24 +222,25 @@ struct RewardShopView: View {
                     .foregroundStyle(.white)
             }
 
-            Text("No Rewards Available")
+            Text(localizationManager.localized("reward.empty.title"))
                 .font(.title2)
                 .fontWeight(.bold)
 
-            Text(
-                "Create rewards that you both can work towards! Rewards need partner approval before they can be redeemed."
-            )
-            .font(.body)
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 32)
+            Text(localizationManager.localized("reward.empty.description"))
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
 
             Button {
                 HapticManager.shared.medium()
                 showCreateReward = true
             } label: {
-                Label("Create Your First Reward", systemImage: "plus.circle.fill")
-                    .fontWeight(.semibold)
+                Label(
+                    localizationManager.localized("reward.empty.button"),
+                    systemImage: "plus.circle.fill"
+                )
+                .fontWeight(.semibold)
             }
             .buttonStyle(GradientButtonStyle(gradient: AppTheme.primaryGradient))
             .padding(.horizontal, 32)
@@ -247,14 +251,17 @@ struct RewardShopView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb.fill")
                         .foregroundColor(.yellow)
-                    Text("Reward Ideas")
+                    Text(localizationManager.localized("reward.ideas"))
                         .font(.headline)
                 }
 
-                TipRow(icon: "fork.knife", text: "Dinner at favorite restaurant")
-                TipRow(icon: "film", text: "Movie night of your choice")
-                TipRow(icon: "gamecontroller", text: "Gaming session together")
-                TipRow(icon: "bed.double", text: "Sleep in on weekend")
+                TipRow(
+                    icon: "fork.knife", text: localizationManager.localized("reward.idea.dinner"))
+                TipRow(icon: "film", text: localizationManager.localized("reward.idea.movie"))
+                TipRow(
+                    icon: "gamecontroller",
+                    text: localizationManager.localized("reward.idea.gaming"))
+                TipRow(icon: "bed.double", text: localizationManager.localized("reward.idea.sleep"))
             }
             .padding()
             .cardStyle()

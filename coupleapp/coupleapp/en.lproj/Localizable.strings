@@ -238,3 +238,255 @@
 
 /* Error title */
 "common.error" = "Error";
+
+
+// MARK: - Dashboard (10 keys)
+
+/* Dashboard title */
+"dashboard.title" = "Dashboard";
+
+/* Welcome message */
+"dashboard.welcome" = "Welcome, %@!";
+
+/* Paired with message */
+"dashboard.paired_with" = "Paired with %@";
+
+/* Not paired message */
+"dashboard.not_paired" = "Not paired yet";
+
+/* Points label */
+"dashboard.points" = "Points";
+
+/* Your points label */
+"dashboard.your_points" = "Your Points";
+
+/* Partner points label */
+"dashboard.partner_points" = "Partner Points";
+
+/* Upcoming event label */
+"dashboard.upcoming_event" = "Upcoming Event";
+
+/* Today label */
+"dashboard.today" = "Today!";
+
+/* Tomorrow label */
+"dashboard.tomorrow" = "Tomorrow";
+
+/* Days away label */
+"dashboard.days_away" = "%d days away";
+
+/* Recent quests label */
+"dashboard.recent_quests" = "Recent Quests";
+
+/* View all label */
+"dashboard.view_all" = "View All";
+
+/* Available rewards label */
+"dashboard.available_rewards" = "Available Rewards";
+
+/* Quick actions label */
+"dashboard.quick_actions" = "Quick Actions";
+
+/* Quests button */
+"dashboard.quests" = "Quests";
+
+/* Rewards button */
+"dashboard.rewards" = "Rewards";
+
+/* Events button */
+"dashboard.events" = "Events";
+
+/* History button */
+"dashboard.history" = "History";
+
+/* Profile button */
+"dashboard.profile" = "Profile";
+
+
+// MARK: - Quest Board (15 keys)
+
+/* Quest board title */
+"quest.title" = "Quest Board";
+
+/* No active quests message */
+"quest.empty.title" = "No Active Quests";
+
+/* Create first quest message */
+"quest.empty.description" = "Create your first quest to start earning points together! Quests can be daily chores, special tasks, or anything you want to accomplish.";
+
+/* Create first quest button */
+"quest.empty.button" = "Create Your First Quest";
+
+/* Quest tips label */
+"quest.tips" = "Tips";
+
+/* Assign points tip */
+"quest.tip.points" = "Assign points based on task difficulty";
+
+/* Set expiration tip */
+"quest.tip.expiration" = "Set expiration dates for time-sensitive tasks";
+
+/* Both partners tip */
+"quest.tip.partners" = "Both partners can complete quests";
+
+/* Quest details section */
+"quest.details" = "Quest Details";
+
+/* Quest title placeholder */
+"quest.title.placeholder" = "Quest title";
+
+/* Points label */
+"quest.points" = "Points: %d";
+
+/* Create quest button */
+"quest.create" = "Create Quest";
+
+/* Complete label */
+"quest.complete" = "Complete";
+
+/* Delete quest confirmation */
+"quest.delete.confirm" = "Are you sure you want to delete this quest?";
+
+/* Swipe instruction */
+"quest.swipe_instruction" = "Swipe left on a quest or tap the checkmark to complete it and earn points!";
+
+
+// MARK: - Reward Shop (15 keys)
+
+/* Reward shop title */
+"reward.title" = "Reward Shop";
+
+/* No rewards message */
+"reward.empty.title" = "No Rewards Available";
+
+/* Create first reward message */
+"reward.empty.description" = "Create rewards that you both can work towards! Rewards need partner approval before they can be redeemed.";
+
+/* Create first reward button */
+"reward.empty.button" = "Create Your First Reward";
+
+/* Reward ideas label */
+"reward.ideas" = "Reward Ideas";
+
+/* Dinner idea */
+"reward.idea.dinner" = "Dinner at favorite restaurant";
+
+/* Movie idea */
+"reward.idea.movie" = "Movie night of your choice";
+
+/* Gaming idea */
+"reward.idea.gaming" = "Gaming session together";
+
+/* Sleep in idea */
+"reward.idea.sleep" = "Sleep in on weekend";
+
+/* Redeem confirmation title */
+"reward.redeem.confirm" = "Redeem Reward";
+
+/* Redeem confirmation message */
+"reward.redeem.message" = "Are you sure you want to redeem '%@' for %d points?";
+
+/* Redeem button */
+"reward.redeem" = "Redeem for %d points";
+
+/* Reward instruction */
+"reward.instruction" = "Tap a reward to redeem it! Your partner must approve rewards before redemption.";
+
+
+// MARK: - Event List (10 keys)
+
+/* Event list title */
+"event.title" = "Events";
+
+/* No events message */
+"event.empty.title" = "No Events Yet";
+
+/* Create first event message */
+"event.empty.description" = "Create your first event to track special dates and never miss important moments together!";
+
+/* Create first event button */
+"event.empty.button" = "Create Your First Event";
+
+/* Event ideas label */
+"event.ideas" = "Event Ideas";
+
+/* Anniversary idea */
+"event.idea.anniversary" = "Anniversary dates";
+
+/* Birthday idea */
+"event.idea.birthday" = "Birthdays and celebrations";
+
+/* Vacation idea */
+"event.idea.vacation" = "Vacation plans";
+
+/* Reminder idea */
+"event.idea.reminder" = "Get reminders 3 days and 1 day before";
+
+/* Event details section */
+"event.details" = "Event Details";
+
+/* Event title placeholder */
+"event.title.placeholder" = "Event Title";
+
+/* Event date label */
+"event.date" = "Event Date";
+
+/* Recurring toggle */
+"event.recurring" = "Recurring Annually";
+
+/* Create event button */
+"event.create" = "Create Event";
+
+/* Update event button */
+"event.update" = "Update Event";
+
+/* Loading events message */
+"event.loading" = "Loading events...";
+
+
+// MARK: - Profile (5 keys)
+
+/* Profile title */
+"profile.title" = "Profile";
+
+/* Edit profile button */
+"profile.edit_button" = "Edit Profile";
+
+/* Partner section */
+"profile.partner" = "Partner";
+
+/* Paired status */
+"profile.paired" = "Paired";
+
+/* Not paired status */
+"profile.not_paired" = "Not paired";
+
+
+// MARK: - Transaction History (3 keys)
+
+/* Transaction history title */
+"transaction.title" = "History";
+
+/* No transactions message */
+"transaction.empty" = "No transactions yet";
+
+/* Transaction date label */
+"transaction.date" = "Date";
+
+
+// MARK: - Settings Additional (5 keys)
+
+/* Sign out button */
+"settings.sign_out" = "Sign Out";
+
+/* Unpair button */
+"settings.unpair" = "Unpair";
+
+/* Unpair confirmation */
+"settings.unpair.confirm" = "Are you sure you want to unpair from your partner? You can pair again anytime.";
+
+/* Partner section */
+"settings.partner" = "Partner";
+
+/* Unpair from partner message */
+"settings.unpair.message" = "Unpair from Partner";

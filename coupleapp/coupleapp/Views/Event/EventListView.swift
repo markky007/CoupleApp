@@ -12,6 +12,7 @@ struct EventListView: View {
     @State private var showEditSheet = false
     @State private var showTooltip = false
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
     @Environment(\.colorScheme) var systemColorScheme
 
     // MARK: - Body
@@ -68,7 +69,7 @@ struct EventListView: View {
                     }
                 }
             }
-            .navigationTitle("Events")
+            .navigationTitle(localizationManager.localized("event.title"))
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -123,7 +124,7 @@ struct EventListView: View {
             }
             .tooltip(
                 message:
-                    "Track special dates and get reminders! Events can be set to recur annually.",
+                    localizationManager.localized("event.idea.reminder"),
                 isShowing: $showTooltip,
                 onDismiss: {
                     onboardingManager.hasSeenEventTooltip = true
@@ -137,6 +138,8 @@ struct EventListView: View {
                     }
                 }
             }
+            // Force view update when language changes
+            .id(localizationManager.currentLanguage)
         }
     }
 
@@ -157,24 +160,25 @@ struct EventListView: View {
                     .foregroundStyle(.white)
             }
 
-            Text("No Events Yet")
+            Text(localizationManager.localized("event.empty.title"))
                 .font(.title2)
                 .fontWeight(.bold)
 
-            Text(
-                "Create your first event to track special dates and never miss important moments together!"
-            )
-            .font(.body)
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 32)
+            Text(localizationManager.localized("event.empty.description"))
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
 
             Button {
                 HapticManager.shared.medium()
                 showCreateSheet = true
             } label: {
-                Label("Create Your First Event", systemImage: "plus.circle.fill")
-                    .fontWeight(.semibold)
+                Label(
+                    localizationManager.localized("event.empty.button"),
+                    systemImage: "plus.circle.fill"
+                )
+                .fontWeight(.semibold)
             }
             .buttonStyle(GradientButtonStyle(gradient: AppTheme.primaryGradient))
             .padding(.horizontal, 32)
@@ -185,14 +189,18 @@ struct EventListView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb.fill")
                         .foregroundColor(.yellow)
-                    Text("Event Ideas")
+                    Text(localizationManager.localized("event.ideas"))
                         .font(.headline)
                 }
 
-                TipRow(icon: "heart.fill", text: "Anniversary dates")
-                TipRow(icon: "birthday.cake", text: "Birthdays and celebrations")
-                TipRow(icon: "airplane", text: "Vacation plans")
-                TipRow(icon: "bell", text: "Get reminders 3 days and 1 day before")
+                TipRow(
+                    icon: "heart.fill",
+                    text: localizationManager.localized("event.idea.anniversary"))
+                TipRow(
+                    icon: "birthday.cake",
+                    text: localizationManager.localized("event.idea.birthday"))
+                TipRow(icon: "airplane", text: localizationManager.localized("event.idea.vacation"))
+                TipRow(icon: "bell", text: localizationManager.localized("event.idea.reminder"))
             }
             .padding()
             .cardStyle()
@@ -209,6 +217,7 @@ struct CreateEventView: View {
 
     @ObservedObject var viewModel: EventViewModel
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var localizationManager: LocalizationManager
 
     @State private var title = ""
     @State private var eventDate = Date()
@@ -217,16 +226,17 @@ struct CreateEventView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Event Details") {
-                    TextField("Event Title", text: $title)
+                Section(localizationManager.localized("event.details")) {
+                    TextField(
+                        localizationManager.localized("event.title.placeholder"), text: $title)
 
                     DatePicker(
-                        "Event Date",
+                        localizationManager.localized("event.date"),
                         selection: $eventDate,
                         displayedComponents: [.date]
                     )
 
-                    Toggle("Recurring Annually", isOn: $isRecurring)
+                    Toggle(localizationManager.localized("event.recurring"), isOn: $isRecurring)
                 }
 
                 Section {
@@ -240,7 +250,7 @@ struct CreateEventView: View {
                             dismiss()
                         }
                     } label: {
-                        Text("Create Event")
+                        Text(localizationManager.localized("event.create"))
                             .frame(maxWidth: .infinity)
                             .fontWeight(.semibold)
                     }
@@ -253,20 +263,20 @@ struct CreateEventView: View {
                     .disabled(title.isEmpty)
                 }
             }
-            .navigationTitle("New Event")
+            .navigationTitle(localizationManager.localized("event.create"))
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button(localizationManager.localized("button.cancel")) {
                             dismiss()
                         }
                     }
                 #else
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
+                        Button(localizationManager.localized("button.cancel")) {
                             dismiss()
                         }
                     }
@@ -283,6 +293,7 @@ struct EditEventView: View {
     @ObservedObject var viewModel: EventViewModel
     let event: Event
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var localizationManager: LocalizationManager
 
     @State private var title: String
     @State private var eventDate: Date
@@ -299,16 +310,17 @@ struct EditEventView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Event Details") {
-                    TextField("Event Title", text: $title)
+                Section(localizationManager.localized("event.details")) {
+                    TextField(
+                        localizationManager.localized("event.title.placeholder"), text: $title)
 
                     DatePicker(
-                        "Event Date",
+                        localizationManager.localized("event.date"),
                         selection: $eventDate,
                         displayedComponents: [.date]
                     )
 
-                    Toggle("Recurring Annually", isOn: $isRecurring)
+                    Toggle(localizationManager.localized("event.recurring"), isOn: $isRecurring)
                 }
 
                 Section {
@@ -323,7 +335,7 @@ struct EditEventView: View {
                             dismiss()
                         }
                     } label: {
-                        Text("Update Event")
+                        Text(localizationManager.localized("event.update"))
                             .frame(maxWidth: .infinity)
                             .fontWeight(.semibold)
                     }
@@ -336,20 +348,20 @@ struct EditEventView: View {
                     .disabled(title.isEmpty)
                 }
             }
-            .navigationTitle("Edit Event")
+            .navigationTitle(localizationManager.localized("event.update"))
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button(localizationManager.localized("button.cancel")) {
                             dismiss()
                         }
                     }
                 #else
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
+                        Button(localizationManager.localized("button.cancel")) {
                             dismiss()
                         }
                     }

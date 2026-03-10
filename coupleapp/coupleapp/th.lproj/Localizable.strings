@@ -9,13 +9,13 @@
 // MARK: - Pairing System (10 keys)
 
 /* Partner pairing code label */
-"pairing.code" = "รหัสคู่ครอง";
+"pairing.code" = "รหัสพาร์ทเนอร์";
 
 /* Partner pairing code description */
-"pairing.code.description" = "แชร์รหัสนี้กับคู่ครองของคุณ";
+"pairing.code.description" = "แชร์รหัสนี้กับพาร์ทเนอร์ของคุณ";
 
 /* Enter partner code placeholder */
-"pairing.code.enter" = "ใส่รหัสคู่ครอง";
+"pairing.code.enter" = "ใส่รหัสพาร์ทเนอร์";
 
 /* Send pairing request button */
 "pairing.request.send" = "ส่งคำขอเชื่อมต่อ";
@@ -39,16 +39,16 @@
 "pairing.request.notification" = "%@ ต้องการเชื่อมต่อกับคุณ";
 
 /* Pairing view title */
-"pairing.title" = "การเชื่อมต่อคู่ครอง";
+"pairing.title" = "การเชื่อมต่อพาร์ทเนอร์";
 
 /* Your partner code section */
-"pairing.your_code" = "รหัสคู่ครองของคุณ";
+"pairing.your_code" = "รหัสพาร์ทเนอร์ของคุณ";
 
 /* Copy code button */
 "pairing.copy_code" = "คัดลอกรหัส";
 
 /* Enter code section */
-"pairing.enter_code" = "ใส่รหัสคู่ครอง";
+"pairing.enter_code" = "ใส่รหัสพาร์ทเนอร์";
 
 /* Code placeholder */
 "pairing.code.placeholder" = "ใส่รหัส 6-8 ตัวอักษร";
@@ -75,16 +75,16 @@
 "pairing.reject" = "ปฏิเสธ";
 
 /* Paired partner section */
-"pairing.paired_partner" = "คู่ครองที่เชื่อมต่อ";
+"pairing.paired_partner" = "พาร์ทเนอร์ที่เชื่อมต่อ";
 
 /* No partner message */
-"pairing.no_partner" = "ยังไม่มีคู่ครอง";
+"pairing.no_partner" = "ยังไม่มีพาร์ทเนอร์";
 
 /* No partner hint */
-"pairing.no_partner.hint" = "แชร์รหัสของคุณหรือใส่รหัสคู่ครองเพื่อเชื่อมต่อ";
+"pairing.no_partner.hint" = "แชร์รหัสของคุณหรือใส่รหัสพาร์ทเนอร์เพื่อเชื่อมต่อ";
 
 /* Unpair confirmation title */
-"pairing.unpair.confirm.title" = "ยกเลิกการเชื่อมต่อคู่ครอง";
+"pairing.unpair.confirm.title" = "ยกเลิกการเชื่อมต่อพาร์ทเนอร์";
 
 /* Unpair confirmation message */
 "pairing.unpair.confirm.message" = "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการเชื่อมต่อ? การกระทำนี้จะตัดการเชื่อมต่อของทั้งสองคน";
@@ -129,7 +129,7 @@
 "profile.picture.upload" = "อัพโหลดรูปภาพ";
 
 /* No partner message */
-"profile.no_partner" = "ยังไม่มีคู่ครอง";
+"profile.no_partner" = "ยังไม่มีพาร์ทเนอร์";
 
 /* Total points label */
 "profile.total_points" = "คะแนนทั้งหมด";
@@ -177,10 +177,10 @@
 // MARK: - Error Messages (15 keys)
 
 /* Invalid partner code error */
-"error.pairing.invalid_code" = "รูปแบบรหัสคู่ครองไม่ถูกต้อง";
+"error.pairing.invalid_code" = "รูปแบบรหัสพาร์ทเนอร์ไม่ถูกต้อง";
 
 /* Partner code not found error */
-"error.pairing.code_not_found" = "ไม่พบรหัสคู่ครอง";
+"error.pairing.code_not_found" = "ไม่พบรหัสพาร์ทเนอร์";
 
 /* Cannot pair with self error */
 "error.pairing.cannot_pair_self" = "คุณไม่สามารถเชื่อมต่อกับตัวเองได้";
@@ -238,3 +238,255 @@
 
 /* Error title */
 "common.error" = "ข้อผิดพลาด";
+
+
+// MARK: - Dashboard (10 keys)
+
+/* Dashboard title */
+"dashboard.title" = "แดชบอร์ด";
+
+/* Welcome message */
+"dashboard.welcome" = "ยินดีต้อนรับ %@!";
+
+/* Paired with message */
+"dashboard.paired_with" = "เชื่อมต่อกับ %@";
+
+/* Not paired message */
+"dashboard.not_paired" = "ยังไม่ได้เชื่อมต่อ";
+
+/* Points label */
+"dashboard.points" = "คะแนน";
+
+/* Your points label */
+"dashboard.your_points" = "คะแนนของคุณ";
+
+/* Partner points label */
+"dashboard.partner_points" = "คะแนนของคู่ครอง";
+
+/* Upcoming event label */
+"dashboard.upcoming_event" = "กิจกรรมที่จะมาถึง";
+
+/* Today label */
+"dashboard.today" = "วันนี้!";
+
+/* Tomorrow label */
+"dashboard.tomorrow" = "พรุ่งนี้";
+
+/* Days away label */
+"dashboard.days_away" = "%d วันข้างหน้า";
+
+/* Recent quests label */
+"dashboard.recent_quests" = "ภารกิจล่าสุด";
+
+/* View all label */
+"dashboard.view_all" = "ดูทั้งหมด";
+
+/* Available rewards label */
+"dashboard.available_rewards" = "รางวัลที่มีอยู่";
+
+/* Quick actions label */
+"dashboard.quick_actions" = "การกระทำด่วน";
+
+/* Quests button */
+"dashboard.quests" = "ภารกิจ";
+
+/* Rewards button */
+"dashboard.rewards" = "รางวัล";
+
+/* Events button */
+"dashboard.events" = "กิจกรรม";
+
+/* History button */
+"dashboard.history" = "ประวัติ";
+
+/* Profile button */
+"dashboard.profile" = "โปรไฟล์";
+
+
+// MARK: - Quest Board (15 keys)
+
+/* Quest board title */
+"quest.title" = "กระดานภารกิจ";
+
+/* No active quests message */
+"quest.empty.title" = "ไม่มีภารกิจที่ใช้งานอยู่";
+
+/* Create first quest message */
+"quest.empty.description" = "สร้างภารกิจแรกของคุณเพื่อเริ่มรับคะแนนร่วมกัน! ภารกิจสามารถเป็นงานประจำวัน งานพิเศษ หรืออะไรก็ตามที่คุณต้องการทำให้สำเร็จ";
+
+/* Create first quest button */
+"quest.empty.button" = "สร้างภารกิจแรกของคุณ";
+
+/* Quest tips label */
+"quest.tips" = "เคล็ดลับ";
+
+/* Assign points tip */
+"quest.tip.points" = "กำหนดคะแนนตามความยากของงาน";
+
+/* Set expiration tip */
+"quest.tip.expiration" = "ตั้งวันหมดอายุสำหรับงานที่มีเวลาจำกัด";
+
+/* Both partners tip */
+"quest.tip.partners" = "พาร์ทเนอร์ทั้งสองสามารถทำภารกิจได้";
+
+/* Quest details section */
+"quest.details" = "รายละเอียดภารกิจ";
+
+/* Quest title placeholder */
+"quest.title.placeholder" = "ชื่อภารกิจ";
+
+/* Points label */
+"quest.points" = "คะแนน: %d";
+
+/* Create quest button */
+"quest.create" = "สร้างภารกิจ";
+
+/* Complete label */
+"quest.complete" = "เสร็จสิ้น";
+
+/* Delete quest confirmation */
+"quest.delete.confirm" = "คุณแน่ใจหรือไม่ว่าต้องการลบภารกิจนี้?";
+
+/* Swipe instruction */
+"quest.swipe_instruction" = "เลื่อนไปทางซ้ายบนภารกิจหรือแตะเครื่องหมายถูกเพื่อทำให้เสร็จสิ้นและรับคะแนน!";
+
+
+// MARK: - Reward Shop (15 keys)
+
+/* Reward shop title */
+"reward.title" = "ร้านรางวัล";
+
+/* No rewards message */
+"reward.empty.title" = "ไม่มีรางวัลที่มีอยู่";
+
+/* Create first reward message */
+"reward.empty.description" = "สร้างรางวัลที่คุณทั้งสองสามารถพยายามได้! รางวัลต้องได้รับการอนุมัติจากพาร์ทเนอร์ก่อนที่จะสามารถแลกได้";
+
+/* Create first reward button */
+"reward.empty.button" = "สร้างรางวัลแรกของคุณ";
+
+/* Reward ideas label */
+"reward.ideas" = "ไอเดียรางวัล";
+
+/* Dinner idea */
+"reward.idea.dinner" = "อาหารค่ำที่ร้านอาหารโปรด";
+
+/* Movie idea */
+"reward.idea.movie" = "ค่ำหนังของคุณ";
+
+/* Gaming idea */
+"reward.idea.gaming" = "เล่นเกมร่วมกัน";
+
+/* Sleep in idea */
+"reward.idea.sleep" = "นอนสายในวันหยุด";
+
+/* Redeem confirmation title */
+"reward.redeem.confirm" = "แลกรางวัล";
+
+/* Redeem confirmation message */
+"reward.redeem.message" = "คุณแน่ใจหรือไม่ว่าต้องการแลก '%@' สำหรับ %d คะแนน?";
+
+/* Redeem button */
+"reward.redeem" = "แลกสำหรับ %d คะแนน";
+
+/* Reward instruction */
+"reward.instruction" = "แตะรางวัลเพื่อแลก! พาร์ทเนอร์ของคุณต้องอนุมัติรางวัลก่อนที่จะสามารถแลกได้";
+
+
+// MARK: - Event List (10 keys)
+
+/* Event list title */
+"event.title" = "กิจกรรม";
+
+/* No events message */
+"event.empty.title" = "ยังไม่มีกิจกรรม";
+
+/* Create first event message */
+"event.empty.description" = "สร้างกิจกรรมแรกของคุณเพื่อติดตามวันพิเศษและไม่พลาดช่วงเวลาสำคัญร่วมกัน!";
+
+/* Create first event button */
+"event.empty.button" = "สร้างกิจกรรมแรกของคุณ";
+
+/* Event ideas label */
+"event.ideas" = "ไอเดียกิจกรรม";
+
+/* Anniversary idea */
+"event.idea.anniversary" = "วันครบรอบ";
+
+/* Birthday idea */
+"event.idea.birthday" = "วันเกิดและการเฉลิมฉลอง";
+
+/* Vacation idea */
+"event.idea.vacation" = "แผนการท่องเที่ยว";
+
+/* Reminder idea */
+"event.idea.reminder" = "รับการแจ้งเตือน 3 วันและ 1 วันก่อน";
+
+/* Event details section */
+"event.details" = "รายละเอียดกิจกรรม";
+
+/* Event title placeholder */
+"event.title.placeholder" = "ชื่อกิจกรรม";
+
+/* Event date label */
+"event.date" = "วันที่ของกิจกรรม";
+
+/* Recurring toggle */
+"event.recurring" = "เกิดซ้ำทุกปี";
+
+/* Create event button */
+"event.create" = "สร้างกิจกรรม";
+
+/* Update event button */
+"event.update" = "อัปเดตกิจกรรม";
+
+/* Loading events message */
+"event.loading" = "กำลังโหลดกิจกรรม...";
+
+
+// MARK: - Profile (5 keys)
+
+/* Profile title */
+"profile.title" = "โปรไฟล์";
+
+/* Edit profile button */
+"profile.edit_button" = "แก้ไขโปรไฟล์";
+
+/* Partner section */
+"profile.partner" = "พาร์ทเนอร์";
+
+/* Paired status */
+"profile.paired" = "เชื่อมต่อแล้ว";
+
+/* Not paired status */
+"profile.not_paired" = "ยังไม่ได้เชื่อมต่อ";
+
+
+// MARK: - Transaction History (3 keys)
+
+/* Transaction history title */
+"transaction.title" = "ประวัติ";
+
+/* No transactions message */
+"transaction.empty" = "ยังไม่มีธุรกรรม";
+
+/* Transaction date label */
+"transaction.date" = "วันที่";
+
+
+// MARK: - Settings Additional (5 keys)
+
+/* Sign out button */
+"settings.sign_out" = "ออกจากระบบ";
+
+/* Unpair button */
+"settings.unpair" = "ยกเลิกการเชื่อมต่อ";
+
+/* Unpair confirmation */
+"settings.unpair.confirm" = "คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการเชื่อมต่อจากพาร์ทเนอร์? คุณสามารถเชื่อมต่ออีกครั้งได้ตลอดเวลา";
+
+/* Partner section */
+"settings.partner" = "พาร์ทเนอร์";
+
+/* Unpair from partner message */
+"settings.unpair.message" = "ยกเลิกการเชื่อมต่อจากพาร์ทเนอร์";

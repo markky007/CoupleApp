@@ -8,6 +8,7 @@ struct QuestBoardView: View {
     @StateObject private var onboardingManager = OnboardingManager.shared
     @State private var showTooltip = false
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
     @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
@@ -28,7 +29,7 @@ struct QuestBoardView: View {
                     questListView
                 }
             }
-            .navigationTitle("Quest Board")
+            .navigationTitle(localizationManager.localized("quest.title"))
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -83,12 +84,14 @@ struct QuestBoardView: View {
             )
             .tooltip(
                 message:
-                    "Swipe left on a quest or tap the checkmark to complete it and earn points!",
+                    localizationManager.localized("quest.swipe_instruction"),
                 isShowing: $showTooltip,
                 onDismiss: {
                     onboardingManager.hasSeenQuestTooltip = true
                 }
             )
+            // Force view update when language changes
+            .id(localizationManager.currentLanguage)
         }
     }
 
@@ -126,24 +129,25 @@ struct QuestBoardView: View {
                     .foregroundStyle(.white)
             }
 
-            Text("No Active Quests")
+            Text(localizationManager.localized("quest.empty.title"))
                 .font(.title2)
                 .fontWeight(.bold)
 
-            Text(
-                "Create your first quest to start earning points together! Quests can be daily chores, special tasks, or anything you want to accomplish."
-            )
-            .font(.body)
-            .foregroundColor(.secondary)
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 32)
+            Text(localizationManager.localized("quest.empty.description"))
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
 
             Button {
                 HapticManager.shared.medium()
                 viewModel.showCreateSheet = true
             } label: {
-                Label("Create Your First Quest", systemImage: "plus.circle.fill")
-                    .fontWeight(.semibold)
+                Label(
+                    localizationManager.localized("quest.empty.button"),
+                    systemImage: "plus.circle.fill"
+                )
+                .fontWeight(.semibold)
             }
             .buttonStyle(GradientButtonStyle(gradient: AppTheme.primaryGradient))
             .padding(.horizontal, 32)
@@ -154,13 +158,15 @@ struct QuestBoardView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "lightbulb.fill")
                         .foregroundColor(.yellow)
-                    Text("Tips")
+                    Text(localizationManager.localized("quest.tips"))
                         .font(.headline)
                 }
 
-                TipRow(icon: "star.fill", text: "Assign points based on task difficulty")
-                TipRow(icon: "clock", text: "Set expiration dates for time-sensitive tasks")
-                TipRow(icon: "person.2.fill", text: "Both partners can complete quests")
+                TipRow(icon: "star.fill", text: localizationManager.localized("quest.tip.points"))
+                TipRow(icon: "clock", text: localizationManager.localized("quest.tip.expiration"))
+                TipRow(
+                    icon: "person.2.fill", text: localizationManager.localized("quest.tip.partners")
+                )
             }
             .padding()
             .cardStyle()
@@ -324,6 +330,7 @@ struct CreateQuestView: View {
     @ObservedObject var viewModel: QuestViewModel
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
     @Environment(\.colorScheme) var systemColorScheme
 
     @State private var title = ""
@@ -340,11 +347,15 @@ struct CreateQuestView: View {
                 .ignoresSafeArea()
 
                 Form {
-                    Section("Quest Details") {
-                        TextField("Quest title", text: $title)
-                            .focused($isTitleFocused)
+                    Section(localizationManager.localized("quest.details")) {
+                        TextField(
+                            localizationManager.localized("quest.title.placeholder"), text: $title
+                        )
+                        .focused($isTitleFocused)
 
-                        Stepper("Points: \(points)", value: $points, in: 1...100, step: 5)
+                        Stepper(
+                            localizationManager.localized("quest.points", points), value: $points,
+                            in: 1...100, step: 5)
                     }
 
                     Section {
@@ -360,7 +371,7 @@ struct CreateQuestView: View {
                                     ProgressView()
                                         .tint(.white)
                                 } else {
-                                    Text("Create Quest")
+                                    Text(localizationManager.localized("quest.create"))
                                         .fontWeight(.semibold)
                                 }
                                 Spacer()
@@ -381,20 +392,20 @@ struct CreateQuestView: View {
                 }
                 .scrollContentBackground(.hidden)
             }
-            .navigationTitle("New Quest")
+            .navigationTitle(localizationManager.localized("quest.create"))
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") {
+                        Button(localizationManager.localized("button.cancel")) {
                             dismiss()
                         }
                     }
                 #else
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
+                        Button(localizationManager.localized("button.cancel")) {
                             dismiss()
                         }
                     }

@@ -9,6 +9,7 @@ struct DashboardView: View {
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var viewModel = DashboardViewModel()
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject var localizationManager: LocalizationManager
     @Environment(\.colorScheme) var systemColorScheme
 
     var body: some View {
@@ -58,7 +59,7 @@ struct DashboardView: View {
                     .transition(.opacity.combined(with: .scale(scale: 0.95)))
                 }
             }
-            .navigationTitle("Dashboard")
+            .navigationTitle(localizationManager.localized("dashboard.title"))
             .toolbar {
                 #if os(iOS)
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -95,6 +96,8 @@ struct DashboardView: View {
                     Text(errorMessage)
                 }
             }
+            // Force view update when language changes
+            .id(localizationManager.currentLanguage)
         }
     }
 
@@ -115,16 +118,16 @@ struct DashboardView: View {
                     .foregroundStyle(.white)
             }
 
-            Text("Welcome, \(viewModel.userName)!")
+            Text(localizationManager.localized("dashboard.welcome", viewModel.userName))
                 .font(.title2)
                 .fontWeight(.bold)
 
             if viewModel.partnerProfile != nil {
-                Text("Paired with \(viewModel.partnerName)")
+                Text(localizationManager.localized("dashboard.paired_with", viewModel.partnerName))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             } else {
-                Text("Not paired yet")
+                Text(localizationManager.localized("dashboard.not_paired"))
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -139,14 +142,14 @@ struct DashboardView: View {
 
     private var pointsSection: some View {
         VStack(spacing: 16) {
-            Text("Points")
+            Text(localizationManager.localized("dashboard.points"))
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 16) {
                 // Your points
                 VStack(spacing: 8) {
-                    Text("Your Points")
+                    Text(localizationManager.localized("dashboard.your_points"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
@@ -161,7 +164,7 @@ struct DashboardView: View {
 
                 // Partner points
                 VStack(spacing: 8) {
-                    Text("Partner Points")
+                    Text(localizationManager.localized("dashboard.partner_points"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
@@ -179,7 +182,7 @@ struct DashboardView: View {
 
     private var upcomingEventSection: some View {
         VStack(spacing: 16) {
-            Text("Upcoming Event")
+            Text(localizationManager.localized("dashboard.upcoming_event"))
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -195,17 +198,19 @@ struct DashboardView: View {
                                 .font(.headline)
 
                             if daysUntil == 0 {
-                                Text("Today!")
+                                Text(localizationManager.localized("dashboard.today"))
                                     .font(.subheadline)
                                     .foregroundColor(.green)
                             } else if daysUntil == 1 {
-                                Text("Tomorrow")
+                                Text(localizationManager.localized("dashboard.tomorrow"))
                                     .font(.subheadline)
                                     .foregroundColor(.orange)
                             } else {
-                                Text("\(daysUntil) days away")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                Text(
+                                    localizationManager.localized("dashboard.days_away", daysUntil)
+                                )
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                             }
                         }
 
@@ -239,13 +244,13 @@ struct DashboardView: View {
     private var recentQuestsSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Recent Quests")
+                Text(localizationManager.localized("dashboard.recent_quests"))
                     .font(.headline)
 
                 Spacer()
 
                 NavigationLink(destination: QuestBoardView()) {
-                    Text("View All")
+                    Text(localizationManager.localized("dashboard.view_all"))
                         .font(.subheadline)
                         .foregroundStyle(AppTheme.primaryGradient)
                 }
@@ -285,13 +290,13 @@ struct DashboardView: View {
     private var rewardsPreviewSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Available Rewards")
+                Text(localizationManager.localized("dashboard.available_rewards"))
                     .font(.headline)
 
                 Spacer()
 
                 NavigationLink(destination: RewardShopView()) {
-                    Text("View All")
+                    Text(localizationManager.localized("dashboard.view_all"))
                         .font(.subheadline)
                         .foregroundStyle(AppTheme.primaryGradient)
                 }
@@ -334,7 +339,7 @@ struct DashboardView: View {
 
     private var quickActionsSection: some View {
         VStack(spacing: 16) {
-            Text("Quick Actions")
+            Text(localizationManager.localized("dashboard.quick_actions"))
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -342,7 +347,7 @@ struct DashboardView: View {
                 NavigationLink(destination: QuestBoardView()) {
                     QuickActionButtonContent(
                         icon: "list.bullet.clipboard",
-                        title: "Quests",
+                        title: localizationManager.localized("dashboard.quests"),
                         color: .blue
                     )
                 }
@@ -354,7 +359,7 @@ struct DashboardView: View {
                 NavigationLink(destination: RewardShopView()) {
                     QuickActionButtonContent(
                         icon: "gift",
-                        title: "Rewards",
+                        title: localizationManager.localized("dashboard.rewards"),
                         color: .orange
                     )
                 }
@@ -366,7 +371,7 @@ struct DashboardView: View {
                 NavigationLink(destination: EventListView()) {
                     QuickActionButtonContent(
                         icon: "calendar",
-                        title: "Events",
+                        title: localizationManager.localized("dashboard.events"),
                         color: .green
                     )
                 }
@@ -378,7 +383,7 @@ struct DashboardView: View {
                 NavigationLink(destination: TransactionHistoryView()) {
                     QuickActionButtonContent(
                         icon: "clock.arrow.circlepath",
-                        title: "History",
+                        title: localizationManager.localized("dashboard.history"),
                         color: .purple
                     )
                 }
@@ -390,7 +395,7 @@ struct DashboardView: View {
                 NavigationLink(destination: ProfileView()) {
                     QuickActionButtonContent(
                         icon: "person.circle",
-                        title: "Profile",
+                        title: localizationManager.localized("dashboard.profile"),
                         color: .pink
                     )
                 }
