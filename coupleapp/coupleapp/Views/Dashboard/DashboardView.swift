@@ -410,6 +410,9 @@ struct QuickActionButtonContent: View {
     let title: String
     let color: Color
 
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.colorScheme) var systemColorScheme
+
     var body: some View {
         VStack(spacing: 12) {
             ZStack {
@@ -429,7 +432,8 @@ struct QuickActionButtonContent: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .cardStyle()
+        .cardStyleReactive(
+            theme: themeManager.currentTheme.rawValue, systemScheme: systemColorScheme)
     }
 }
 
