@@ -92,17 +92,23 @@ class QuestService {
         )
 
         do {
-            let quest: Quest =
+            let response =
                 try await client
                 .from("quests")
                 .insert(newQuest)
                 .select()
-                .single()
                 .execute()
-                .value
+
+            // Decode response as array and get first element
+            let quests = try JSONDecoder().decode([Quest].self, from: response.data)
+            guard let quest = quests.first else {
+                throw QuestError.creationFailed("Failed to create quest")
+            }
 
             print("✅ Quest created: \(quest.title)")
             return quest
+        } catch let error as QuestError {
+            throw error
         } catch {
             print("❌ Failed to create quest: \(error.localizedDescription)")
             throw QuestError.creationFailed(error.localizedDescription)

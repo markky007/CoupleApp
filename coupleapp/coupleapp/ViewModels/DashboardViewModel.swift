@@ -77,7 +77,6 @@ class DashboardViewModel: ObservableObject {
     deinit {
         Task {
             await questService.unsubscribeFromQuestChanges()
-            await profileService.unsubscribeFromProfileChanges()
         }
     }
 
@@ -170,36 +169,6 @@ class DashboardViewModel: ObservableObject {
                 }
             } catch {
                 print("Failed to setup quest subscription: \(error.localizedDescription)")
-            }
-        }
-
-        // Subscribe to profile changes
-        Task {
-            guard let userId = authService.currentUserId else { return }
-
-            do {
-                try await profileService.subscribeToProfileChanges(userId: userId) {
-                    [weak self] profile in
-                    Task { @MainActor in
-                        self?.userProfile = profile
-
-                        // Reload partner profile if partner changed
-                        if let partnerId = profile.partnerId {
-                            do {
-                                self?.partnerProfile = try await self?.profileService.fetchProfile(
-                                    userId: partnerId)
-                            } catch {
-                                print(
-                                    "Failed to reload partner profile: \(error.localizedDescription)"
-                                )
-                            }
-                        } else {
-                            self?.partnerProfile = nil
-                        }
-                    }
-                }
-            } catch {
-                print("Failed to setup profile subscription: \(error.localizedDescription)")
             }
         }
     }

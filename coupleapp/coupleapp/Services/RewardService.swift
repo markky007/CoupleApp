@@ -72,17 +72,23 @@ class RewardService {
         )
 
         do {
-            let reward: Reward =
+            let response =
                 try await client
                 .from("rewards")
                 .insert(newReward)
                 .select()
-                .single()
                 .execute()
-                .value
+
+            // Decode response as array and get first element
+            let rewards = try JSONDecoder().decode([Reward].self, from: response.data)
+            guard let reward = rewards.first else {
+                throw RewardError.creationFailed("Failed to create reward")
+            }
 
             print("✅ Reward created: \(title) (\(pointsCost) points)")
             return reward
+        } catch let error as RewardError {
+            throw error
         } catch {
             print("❌ Failed to create reward: \(error.localizedDescription)")
             throw RewardError.creationFailed(error.localizedDescription)
@@ -174,16 +180,16 @@ class RewardService {
     /// - Throws: RewardError if fetch fails
     private func fetchReward(rewardId: UUID) async throws -> Reward? {
         do {
-            let reward: Reward =
+            let response =
                 try await client
                 .from("rewards")
                 .select()
                 .eq("id", value: rewardId)
-                .single()
                 .execute()
-                .value
 
-            return reward
+            // Decode response as array and get first element
+            let rewards = try JSONDecoder().decode([Reward].self, from: response.data)
+            return rewards.first
         } catch {
             // Check if it's a "not found" error
             if error.localizedDescription.contains("not found")
@@ -225,17 +231,23 @@ class RewardService {
         )
 
         do {
-            let reward: Reward =
+            let response =
                 try await client
                 .from("rewards")
                 .insert(newReward)
                 .select()
-                .single()
                 .execute()
-                .value
+
+            // Decode response as array and get first element
+            let rewards = try JSONDecoder().decode([Reward].self, from: response.data)
+            guard let reward = rewards.first else {
+                throw RewardError.creationFailed("Failed to create reward proposal")
+            }
 
             print("✅ Custom reward proposal created: \(title) by user \(createdBy)")
             return reward
+        } catch let error as RewardError {
+            throw error
         } catch {
             print("❌ Failed to create reward proposal: \(error.localizedDescription)")
             throw RewardError.creationFailed(error.localizedDescription)

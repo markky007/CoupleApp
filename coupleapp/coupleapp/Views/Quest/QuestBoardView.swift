@@ -199,15 +199,12 @@ struct QuestRowView: View {
             HStack {
                 Spacer()
 
-                VStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.title)
-                        .foregroundColor(.white)
-                    Text(localizationManager.localized("quest.complete"))
-                        .font(.caption)
-                        .foregroundColor(.white)
-                }
-                .padding(.horizontal, 30)
+                Text(localizationManager.localized("quest.complete"))
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+
+                Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(AppTheme.successGradient)
@@ -276,17 +273,10 @@ struct QuestRowView: View {
                     HapticManager.shared.light()
                     completeQuestWithAnimation()
                 } label: {
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.successGradient)
-                            .frame(width: 44, height: 44)
-                            .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
-
-                        Image(systemName: "checkmark")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                    }
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 44))
+                        .foregroundStyle(AppTheme.successGradient)
+                        .shadow(color: AppTheme.shadowColor, radius: 4, x: 0, y: 2)
                 }
                 .disabled(viewModel.isLoading)
             }

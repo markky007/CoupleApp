@@ -61,16 +61,24 @@ class AuthService: ObservableObject {
             // Get initial session
             do {
                 self.session = try await supabase.auth.session
+                print(
+                    "🔐 Initial session loaded: \(self.session != nil ? "authenticated" : "not authenticated")"
+                )
             } catch {
                 // No active session on startup
                 self.session = nil
+                print("🔐 No initial session found")
             }
 
             // Listen for auth state changes
             for await authEvent in supabase.auth.authStateChanges {
                 // Update session on main thread
                 await MainActor.run {
+                    print("📡 Auth state changed: \(authEvent.event.rawValue)")
                     self.session = authEvent.session
+                    print(
+                        "🔐 Session updated: \(self.session != nil ? "authenticated" : "not authenticated")"
+                    )
                 }
             }
         }
@@ -131,6 +139,8 @@ class AuthService: ObservableObject {
 
         // Attempt sign in
         do {
+            print("🔐 Attempting sign in for: \(email)")
+
             let response = try await supabase.auth.signIn(
                 email: email,
                 password: password
@@ -141,6 +151,14 @@ class AuthService: ObservableObject {
             print("👤 User ID: \(response.user.id.uuidString)")
         } catch {
             print("❌ Sign in failed: \(error.localizedDescription)")
+            print("❌ Error type: \(type(of: error))")
+
+            // Check if error is due to invalid credentials
+            let errorMessage = error.localizedDescription.lowercased()
+            if errorMessage.contains("invalid") || errorMessage.contains("credentials") {
+                throw AuthError.signInFailed("Invalid email or password")
+            }
+
             throw AuthError.signInFailed(error.localizedDescription)
         }
     }
@@ -154,10 +172,18 @@ class AuthService: ObservableObject {
         }
 
         do {
+            // First, clear the session from Supabase
             try await supabase.auth.signOut()
 
-            // Session is automatically cleared via auth state listener
-            print("✅ Sign out successful")
+            // Wait a moment for Supabase to process the logout
+            try await Task.sleep(nanoseconds: 500_000_000)  // 0.5 seconds
+
+            // Explicitly clear session on main thread
+            await MainActor.run {
+                self.session = nil
+            }
+
+            print("✅ Sign out successful - session cleared")
         } catch {
             print("❌ Sign out failed: \(error.localizedDescription)")
             throw AuthError.signOutFailed(error.localizedDescription)
@@ -186,11 +212,23 @@ class AuthService: ObservableObject {
     /// - Throws: AuthError if refresh fails
     func refreshSession() async throws {
         do {
+            // Try to refresh the session
             let newSession = try await supabase.auth.session
-            self.session = newSession
+
+            // Update session on main thread
+            await MainActor.run {
+                self.session = newSession
+            }
+
             print("✅ Session refreshed")
         } catch {
             print("❌ Session refresh failed: \(error.localizedDescription)")
+
+            // If session refresh fails, clear the session
+            await MainActor.run {
+                self.session = nil
+            }
+
             throw AuthError.sessionRefreshFailed(error.localizedDescription)
         }
     }

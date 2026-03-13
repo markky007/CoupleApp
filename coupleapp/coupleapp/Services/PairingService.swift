@@ -80,22 +80,26 @@ class PairingService {
 
         do {
             // Query profiles table for the partner code
-            let profiles: [Profile] =
+            let response =
                 try await client
                 .from("profiles")
                 .select("id")
                 .eq("partner_code", value: trimmedCode)
                 .execute()
-                .value
+
+            // Decode response data using a concrete type
+            struct IdOnly: Decodable { let id: UUID }
+            let profiles = try JSONDecoder().decode([IdOnly].self, from: response.data)
 
             // Check if a profile was found
-            if profiles.isEmpty {
+            guard let first = profiles.first else {
                 return nil
             }
 
             // Return the first profile's ID
-            print("✅ Found user \(profiles[0].id) with partner code: \(trimmedCode)")
-            return profiles[0].id
+            let userId = first.id
+            print("✅ Found user \(userId) with partner code: \(trimmedCode)")
+            return userId
 
         } catch let error as PairingError {
             throw error
@@ -138,16 +142,19 @@ class PairingService {
             .from("profiles")
             .select("partner_id")
             .eq("id", value: requesterId.uuidString)
-            .single()
             .execute()
 
         struct PartnerCheck: Codable {
             let partner_id: UUID?
         }
 
-        let requesterProfile = try JSONDecoder().decode(
-            PartnerCheck.self, from: requesterResponse.data)
-        guard requesterProfile.partner_id == nil else {
+        // Decode as array and get first element
+        let requesterProfiles = try JSONDecoder().decode(
+            [PartnerCheck].self, from: requesterResponse.data)
+        guard !requesterProfiles.isEmpty else {
+            throw PairingError.databaseError("Requester profile not found")
+        }
+        guard requesterProfiles[0].partner_id == nil else {
             throw PairingError.alreadyPaired
         }
 
@@ -157,12 +164,14 @@ class PairingService {
             .from("profiles")
             .select("partner_id")
             .eq("id", value: recipientId.uuidString)
-            .single()
             .execute()
 
-        let recipientProfile = try JSONDecoder().decode(
-            PartnerCheck.self, from: recipientResponse.data)
-        guard recipientProfile.partner_id == nil else {
+        let recipientProfiles = try JSONDecoder().decode(
+            [PartnerCheck].self, from: recipientResponse.data)
+        guard !recipientProfiles.isEmpty else {
+            throw PairingError.databaseError("Recipient profile not found")
+        }
+        guard recipientProfiles[0].partner_id == nil else {
             throw PairingError.recipientAlreadyPaired
         }
 
@@ -190,11 +199,16 @@ class PairingService {
             .from("pairing_requests")
             .insert(newRequest)
             .select()
-            .single()
             .execute()
 
-        let createdRequest = try JSONDecoder().decode(
-            PairingRequest.self, from: insertResponse.data)
+        // Decode as array and get first element
+        let createdRequests = try JSONDecoder().decode(
+            [PairingRequest].self, from: insertResponse.data)
+        guard !createdRequests.isEmpty else {
+            throw PairingError.databaseError("Failed to create pairing request")
+        }
+
+        let createdRequest = createdRequests[0]
 
         print("✅ Pairing request created: \(requesterId) -> \(recipientId)")
         return createdRequest
@@ -317,15 +331,18 @@ class PairingService {
                 .from("profiles")
                 .select("partner_id")
                 .eq("id", value: userId.uuidString)
-                .single()
                 .execute()
 
             struct PartnerCheck: Codable {
                 let partner_id: UUID?
             }
 
-            let userProfile = try JSONDecoder().decode(PartnerCheck.self, from: userResponse.data)
-            guard userProfile.partner_id == nil else {
+            let userProfiles = try JSONDecoder().decode(
+                [PartnerCheck].self, from: userResponse.data)
+            guard !userProfiles.isEmpty else {
+                throw PairingError.databaseError("User profile not found")
+            }
+            guard userProfiles[0].partner_id == nil else {
                 throw PairingError.alreadyPaired
             }
 
@@ -334,12 +351,14 @@ class PairingService {
                 .from("profiles")
                 .select("partner_id")
                 .eq("id", value: partnerId.uuidString)
-                .single()
                 .execute()
 
-            let partnerProfile = try JSONDecoder().decode(
-                PartnerCheck.self, from: partnerResponse.data)
-            guard partnerProfile.partner_id == nil else {
+            let partnerProfiles = try JSONDecoder().decode(
+                [PartnerCheck].self, from: partnerResponse.data)
+            guard !partnerProfiles.isEmpty else {
+                throw PairingError.databaseError("Partner profile not found")
+            }
+            guard partnerProfiles[0].partner_id == nil else {
                 throw PairingError.recipientAlreadyPaired
             }
 
@@ -378,14 +397,19 @@ class PairingService {
                 .from("profiles")
                 .select("partner_id")
                 .eq("id", value: userId.uuidString)
-                .single()
                 .execute()
 
             struct PartnerCheck: Codable {
                 let partner_id: UUID?
             }
 
-            let userProfile = try JSONDecoder().decode(PartnerCheck.self, from: userResponse.data)
+            let userProfiles = try JSONDecoder().decode(
+                [PartnerCheck].self, from: userResponse.data)
+            guard !userProfiles.isEmpty else {
+                throw PairingError.databaseError("User profile not found")
+            }
+
+            let userProfile = userProfiles[0]
 
             // Step 2: Check if user has a partner
             guard let partnerId = userProfile.partner_id else {

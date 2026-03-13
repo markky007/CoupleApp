@@ -52,17 +52,23 @@ class ProfileService {
     /// - Throws: ProfileError if fetch fails
     func fetchProfile(userId: UUID) async throws -> Profile {
         do {
-            let profile: Profile =
+            let response =
                 try await client
                 .from("profiles")
                 .select()
                 .eq("id", value: userId)
-                .single()
                 .execute()
-                .value
+
+            // Decode response as array and get first element
+            let profiles = try JSONDecoder().decode([Profile].self, from: response.data)
+            guard let profile = profiles.first else {
+                throw ProfileError.profileNotFound
+            }
 
             print("✅ Profile fetched for user: \(userId)")
             return profile
+        } catch let error as ProfileError {
+            throw error
         } catch {
             print("❌ Failed to fetch profile: \(error.localizedDescription)")
             throw ProfileError.fetchFailed(error.localizedDescription)
@@ -84,17 +90,23 @@ class ProfileService {
         let newProfile = Profile.new(id: userId, displayName: displayName)
 
         do {
-            let profile: Profile =
+            let response =
                 try await client
                 .from("profiles")
                 .insert(newProfile)
                 .select()
-                .single()
                 .execute()
-                .value
+
+            // Decode response as array and get first element
+            let profiles = try JSONDecoder().decode([Profile].self, from: response.data)
+            guard let profile = profiles.first else {
+                throw ProfileError.creationFailed("Failed to create profile")
+            }
 
             print("✅ Profile created for user: \(userId)")
             return profile
+        } catch let error as ProfileError {
+            throw error
         } catch {
             print("❌ Failed to create profile: \(error.localizedDescription)")
             throw ProfileError.creationFailed(error.localizedDescription)
@@ -286,13 +298,16 @@ class ProfileService {
         let normalizedCode = code.trimmingCharacters(in: .whitespaces).uppercased()
 
         do {
-            let profiles: [Profile] =
+            // Execute query and manually decode response as array
+            let response =
                 try await client
                 .from("profiles")
                 .select()
                 .eq("partner_code", value: normalizedCode)
                 .execute()
-                .value
+
+            // Decode response data as array of profiles
+            let profiles = try JSONDecoder().decode([Profile].self, from: response.data)
 
             if profiles.isEmpty {
                 return nil
@@ -574,6 +589,7 @@ class ProfileService {
         realtimeChannel = nil
         print("✅ Unsubscribed from profile changes")
     }
+
 }
 
 // MARK: - ProfileError

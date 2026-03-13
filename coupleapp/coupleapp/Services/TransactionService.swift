@@ -124,19 +124,25 @@ class TransactionService {
         )
 
         do {
-            let createdTransaction: Transaction =
+            let response =
                 try await client
                 .from("transactions")
                 .insert(transaction)
                 .select()
-                .single()
                 .execute()
-                .value
+
+            // Decode response as array and get first element
+            let transactions = try JSONDecoder().decode([Transaction].self, from: response.data)
+            guard let createdTransaction = transactions.first else {
+                throw TransactionError.creationFailed("Failed to create transaction")
+            }
 
             print(
                 "✅ Transaction created: \(type.rawValue) \(amount) points for user \(userId)"
             )
             return createdTransaction
+        } catch let error as TransactionError {
+            throw error
         } catch {
             print("❌ Failed to create transaction: \(error.localizedDescription)")
             throw TransactionError.creationFailed(error.localizedDescription)

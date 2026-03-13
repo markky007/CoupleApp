@@ -78,17 +78,23 @@ class EventService {
         )
 
         do {
-            let event: Event =
+            let response =
                 try await client
                 .from("events")
                 .insert(insertData)
                 .select()
-                .single()
                 .execute()
-                .value
+
+            // Decode response as array and get first element
+            let events = try JSONDecoder().decode([Event].self, from: response.data)
+            guard let event = events.first else {
+                throw EventError.creationFailed("Failed to create event")
+            }
 
             print("✅ Event created: \(event.title)")
             return event
+        } catch let error as EventError {
+            throw error
         } catch {
             print("❌ Failed to create event: \(error.localizedDescription)")
             throw EventError.creationFailed(error.localizedDescription)
